@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import requests
 import os
+import json
 
 app = FastAPI()
 
@@ -133,3 +134,19 @@ Langsung jawab inti.
             status_code=500,
             detail=str(e)
         )
+
+@app.post("/verify-license")
+async def verify_license(request: Request):
+
+    data = await request.json()
+
+    license_key = data.get("license_key")
+
+    with open("licenses.json", "r") as f:
+        licenses = json.load(f)
+
+    valid = licenses.get(license_key, False)
+
+    return {
+        "valid": valid
+    }
