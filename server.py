@@ -1,23 +1,120 @@
-from fastapi import FastAPI, UploadFile, File
-import uvicorn
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+
+import requests
 import os
 
 app = FastAPI()
 
-# Root endpoint untuk mengecek status server
+# ======================================================
+# CORS
+# ======================================================
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# ======================================================
+# GEMINI API KEY
+# ======================================================
+
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# ======================================================
+# ROOT
+# ======================================================
+
 @app.get("/")
 async def root():
-    return {"status": "online", "message": "Server FastAPI sudah berjalan di Railway!"}
 
-# Endpoint untuk memproses data atau gambar
+    return {
+        "status": "online",
+        "app": "Zomet API"
+    }
+
+# ======================================================
+# PROCESS IMAGE
+# ======================================================
+
 @app.post("/process-image")
-async def process_image(file: UploadFile = File(...)):
-    # Di sini Anda bisa menambahkan logika pengolahan gambar atau AI
-    # Contoh sederhana: menyimpan file
-    filename = file.filename
-    return {"message": "File diterima", "filename": filename}
+async def process_image(request: Request):
 
-if __name__ == "__main__":
-    # Ini dijalankan jika Anda menjalankan server langsung dari terminal
-    port = int(os.getenv("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    try:
+
+        # ==============================================
+        # GET JSON
+        # ==============================================
+
+        data = await request.json()
+
+        image_base64 = data.get("image")
+
+        if not image_base64:
+
+            raise HTTPException(
+                status_code=400,
+                detail="Image not found"
+            )
+
+        # ==============================================
+        # GEMINI API
+        # ==============================================
+
+        url = (
+            "https://generativelanguage.googleapis.com/"
+            f"v1beta/models/gemini-2.5-flash:generateContent"
+            f"?key={GEMINI_API_KEY}"
+        )
+
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {
+                            "text": """
+Anda adalah AI OCR dan pembaca soal.
+
+Jika soal pilihan ganda:
+- pilih jawaban terbaik
+- jelaskan singkat
+
+Jika coding:
+- jelaskan error
+- beri solusi
+
+Jangan mendeskripsikan gambar.
+Langsung jawab inti.
+"""
+                        },
+                        {
+                            "inline_data": {
+                                "mime_type": "image/jpeg",
+                                "data": image_base64
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+
+        response = requests.post(
+            url,
+            json=payload,
+            timeout=90
+        )
+
+        print("STATUS:", response.status_code)
+        print("BODY:", response.text)
+
+        return response.json()
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
