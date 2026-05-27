@@ -1,7 +1,11 @@
-{
-  "ZOMET-001": {
-    "active": true,
-    "current_hwid": "",
-    "last_login": ""
+[
+  {
+    "license_key": "ABC123",
+    "hwid": "DEVICE123",
+    "plan": "demo",
+    "expires_at": null,
+    "usage_count": 3,
+    "usage_limit": 5,
+    "active": true
   }
-}
+]
