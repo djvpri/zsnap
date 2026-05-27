@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from datetime import datetime
 from db import SessionLocal, engine
-from models import Base, License
+from model import Base, License
 from license_service import calculate_expiry
 
 Base.metadata.create_all(bind=engine)
