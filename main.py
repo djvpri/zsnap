@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header, Depends
 from pydantic import BaseModel
 from datetime import datetime
 from db import SessionLocal, engine
@@ -6,8 +6,14 @@ from model import Base, License
 from license_service import calculate_expiry
 
 Base.metadata.create_all(bind=engine)
+API_SECRET = "rahasia-dari-desktop-ke-server"
 
 app = FastAPI()
+
+# 1. DEFINISIKAN FUNGSI INI DI ATAS
+def verify_token(x_api_key: str = Header(...)):
+    if x_api_key != API_SECRET:
+        raise HTTPException(status_code=403, detail="Akses ditolak")
 
 # =========================
 # REQUEST MODEL
@@ -16,36 +22,24 @@ class LicenseRequest(BaseModel):
     license_key: str
     hwid: str = None
 
-
 # =========================
 # VERIFY LICENSE
 # =========================
-@app.post("/verify-license")
+# 2. SEKARANG DEKORATOR BISA MENEMUKAN FUNGSI verify_token
+@app.post("/verify-license", dependencies=[Depends(verify_token)])
 def verify(data: LicenseRequest):
+    # ... isi fungsi tetap sama ...
     db = SessionLocal()
-
-    lic = db.query(License).filter(
-        License.license_key == data.license_key
-    ).first()
-
+    lic = db.query(License).filter(License.license_key == data.license_key).first()
     if not lic:
         raise HTTPException(status_code=404, detail="License not found")
-
-    # HWID lock
     if lic.hwid and lic.hwid != data.hwid:
         return {"valid": False, "reason": "HWID mismatch"}
-
-    # bind HWID pertama kali
     if not lic.hwid:
         lic.hwid = data.hwid
-
-    # check expired
-    if lic.expires_at:
-        if datetime.now().date() > lic.expires_at:
-            return {"valid": False, "reason": "expired"}
-
+    if lic.expires_at and datetime.now().date() > lic.expires_at:
+        return {"valid": False, "reason": "expired"}
     db.commit()
-
     return {
         "valid": True,
         "plan": lic.plan,
@@ -54,11 +48,10 @@ def verify(data: LicenseRequest):
         "usage_limit": lic.usage_limit
     }
 
-
 # =========================
 # INCREMENT USAGE
 # =========================
-@app.post("/increment-usage")
+@app.post("/increment-usage", dependencies=[Depends(verify_token)])
 def increment(data: LicenseRequest):
     db = SessionLocal()
 
@@ -82,7 +75,7 @@ def increment(data: LicenseRequest):
 # =========================
 # CREATE LICENSE (ADMIN)
 # =========================
-@app.post("/create-license")
+@app.post("/create-license", dependencies=[Depends(verify_token)])
 def create_license(data: LicenseRequest, plan: str):
     db = SessionLocal()
 
@@ -99,3 +92,7 @@ def create_license(data: LicenseRequest, plan: str):
     db.commit()
 
     return {"message": "created", "plan": plan}
+
+def verify_token(x_api_key: str = Header(...)):
+    if x_api_key != API_SECRET:
+        raise HTTPException(status_code=403, detail="Akses ditolak")
