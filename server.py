@@ -40,8 +40,23 @@ async def root():
 # PROCESS IMAGE
 # ======================================================
 
+SECRET_KEY = "zomet-secret-2026"
+
 @app.post("/process-image")
 async def process_image(request: Request):
+
+    # =========================
+    # VALIDASI TOKEN
+    # =========================
+
+    client_key = request.headers.get("X-API-KEY")
+
+    if client_key != SECRET_KEY:
+
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorized"
+        )
 
     try:
 
