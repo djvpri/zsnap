@@ -140,6 +140,8 @@ async def verify_license(request: Request):
 
     data = await request.json()
 
+    hwid = data.get("hwid")
+
     license_key = data.get("license_key")
 
     with open("licenses.json", "r") as f:
