@@ -14,3 +14,8 @@ __pycache__/
 
 # Logs
 *.log
+
+# Build output
+zomet.ico
+dist/
+build/
