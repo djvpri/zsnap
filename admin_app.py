@@ -25,10 +25,11 @@ def check_login():
 
         st.stop()
 
-def generate_license_key():
+def generate_license_key(plan: str = ""):
     chars = string.ascii_uppercase + string.digits
     parts = ["".join(random.choices(chars, k=6)) for _ in range(3)]
-    return "ZOMET-" + "-".join(parts)
+    prefix = plan.upper() if plan else "ZOMET"
+    return prefix + "-" + "-".join(parts)
 
 check_login()
 
@@ -45,16 +46,16 @@ st.title("Zomet Admin Dashboard")
 if "generated_key" not in st.session_state:
     st.session_state.generated_key = ""
 
+plan = st.selectbox("Plan", ["demo", "daily", "weekly", "monthly", "yearly"])
+
 col1, col2 = st.columns([4, 1])
 with col1:
     key = st.text_input("License Key", value=st.session_state.generated_key)
 with col2:
     st.write("")
     if st.button("Generate"):
-        st.session_state.generated_key = generate_license_key()
+        st.session_state.generated_key = generate_license_key(plan)
         st.rerun()
-
-plan = st.selectbox("Plan", ["demo", "daily", "weekly", "monthly", "yearly"])
 
 if st.button("Create License"):
 

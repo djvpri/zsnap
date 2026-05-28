@@ -61,10 +61,11 @@ USAGE_LIMITS = {
     "yearly":  999999
 }
 
-def generate_license_key():
+def generate_license_key(plan: str = ""):
     chars = string.ascii_uppercase + string.digits
     parts = ["".join(random.choices(chars, k=6)) for _ in range(3)]
-    return "ZOMET-" + "-".join(parts)
+    prefix = plan.upper() if plan else "ZOMET"
+    return prefix + "-" + "-".join(parts)
 
 # =========================================================
 # REQUEST MODELS
@@ -323,7 +324,7 @@ def bulk_create_licenses(data: BulkCreateRequest, db=Depends(get_db)):
     created = []
 
     for _ in range(data.quantity):
-        key = generate_license_key()
+        key = generate_license_key(data.plan)
         lic = License(
             license_key=key,
             plan=data.plan,
