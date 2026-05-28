@@ -111,7 +111,6 @@ class SnippingWidget(QMainWindow):
 
             rect = self.rubberBand.geometry().normalized()
 
-            # FIX: capture global position BEFORE closing the window
             global_pos = self.mapToGlobal(
                 rect.topLeft()
             )
@@ -249,7 +248,7 @@ class GeminiWorker(QThread):
                 if os.path.exists(self.image_path):
                     os.remove(self.image_path)
 
-            except:
+            except Exception:
                 pass
 
 
@@ -416,8 +415,6 @@ class StealthWindow(QWidget):
 
             QApplication.quit()
 
-            sys.exit(0)
-
         if (
             event.modifiers() ==
             Qt.KeyboardModifier.ControlModifier
@@ -480,7 +477,6 @@ class StealthWindow(QWidget):
                 "Mengambil screenshot..."
             )
 
-            # FIX: use mss.mss() (lowercase) per documented API
             with mss.mss() as sct:
 
                 monitor = {
@@ -501,7 +497,7 @@ class StealthWindow(QWidget):
                 )
 
             # =============================================
-            # UPSCALE OCR — FIX: use LANCZOS for better quality
+            # UPSCALE OCR
             # =============================================
 
             img = img.resize(
