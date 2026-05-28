@@ -178,11 +178,37 @@ class GeminiWorker(QThread):
 
             if response.status_code != 200:
 
-                self.finished_signal.emit(
-                    f"SERVER ERROR {response.status_code}\n\n"
-                    f"{response.text}"
-                )
+                try:
+                    detail = response.json().get("detail", "")
+                except Exception:
+                    detail = response.text
 
+                if response.status_code == 403:
+                    if "Usage limit reached" in detail:
+                        msg = (
+                            "Batas penggunaan habis.\n\n"
+                            "Silakan hubungi admin untuk\n"
+                            "upgrade atau perpanjang lisensi."
+                        )
+                    elif "License inactive" in detail:
+                        msg = (
+                            "Lisensi tidak aktif.\n\n"
+                            "Hubungi admin untuk\n"
+                            "mengaktifkan kembali."
+                        )
+                    else:
+                        msg = "Akses ditolak. Hubungi admin."
+                elif response.status_code == 401:
+                    msg = "Autentikasi gagal. Hubungi admin."
+                elif response.status_code >= 500:
+                    msg = (
+                        "Server sedang bermasalah.\n\n"
+                        "Coba beberapa saat lagi."
+                    )
+                else:
+                    msg = f"Terjadi kesalahan (kode {response.status_code})."
+
+                self.finished_signal.emit(msg)
                 return
 
             # =============================================
@@ -232,15 +258,25 @@ class GeminiWorker(QThread):
         except requests.Timeout:
 
             self.finished_signal.emit(
-                "Request timeout.\nServer terlalu lama merespon."
+                "Koneksi timeout.\n\n"
+                "Periksa koneksi internet Anda\n"
+                "lalu coba lagi."
             )
 
-        except Exception as e:
+        except requests.ConnectionError:
+
+            self.finished_signal.emit(
+                "Tidak dapat terhubung ke server.\n\n"
+                "Periksa koneksi internet Anda."
+            )
+
+        except Exception:
 
             traceback.print_exc()
 
             self.finished_signal.emit(
-                f"ERROR:\n\n{str(e)}"
+                "Terjadi kesalahan tidak terduga.\n\n"
+                "Coba lagi atau hubungi admin."
             )
 
         finally:
