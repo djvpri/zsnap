@@ -222,11 +222,19 @@ def create_license(data: CreateLicenseRequest, db=Depends(get_db)):
 
     expires = calculate_expiry(data.plan)
 
+    usage_limits = {
+        "demo":    5,
+        "daily":   100,
+        "weekly":  700,
+        "monthly": 3000,
+        "yearly":  999999
+    }
+
     lic = License(
         license_key=data.license_key,
         plan=data.plan,
         expires_at=expires.date() if expires else None,
-        usage_limit=5 if data.plan == "demo" else 999999
+        usage_limit=usage_limits.get(data.plan, 999999)
     )
 
     db.add(lic)
