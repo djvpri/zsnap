@@ -901,12 +901,35 @@
   }
 
   function copyKey() {
-    const key = document.getElementById('resultKey').textContent;
-    navigator.clipboard.writeText(key).then(() => {
-      const btn = document.getElementById('copyBtn');
-      btn.textContent = saved === 'id' ? 'Tersalin!' : 'Copied!';
-      setTimeout(() => btn.textContent = saved === 'id' ? 'Salin' : 'Copy', 2000);
-    });
+    const key = document.getElementById('resultKey').textContent.trim();
+    const btn = document.getElementById('copyBtn');
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(key)
+        .then(() => showCopied(btn))
+        .catch(() => fallbackCopy(key, btn));
+    } else {
+      fallbackCopy(key, btn);
+    }
+  }
+
+  function fallbackCopy(text, btn) {
+    const el = document.createElement('textarea');
+    el.value = text;
+    el.style.position = 'fixed';
+    el.style.opacity  = '0';
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    showCopied(btn);
+  }
+
+  function showCopied(btn) {
+    btn.textContent = saved === 'id' ? 'Tersalin! ✓' : 'Copied! ✓';
+    setTimeout(() => {
+      btn.textContent = saved === 'id' ? 'Salin' : 'Copy';
+    }, 2000);
   }
 </script>
 
