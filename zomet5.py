@@ -479,6 +479,9 @@ class StealthWindow(QWidget):
 
         self.color_index = 0
 
+        self._last_key      = None
+        self._last_key_time = 0.0
+
         self.init_ui()
 
     # =====================================================
@@ -502,10 +505,10 @@ class StealthWindow(QWidget):
         self.label = QLabel(
             f"{APP_TITLE}\n\n"
             "LEFT CLICK + DRAG : Move Window\n"
-            "RIGHT CLICK       : Screenshot Menu\n"
-            "  1. Region Selection\n"
-            "  2. Full Screen\n"
-            "  3. Select Window\n\n"
+            "RIGHT CLICK       : Screenshot Menu\n\n"
+            "QQ                : Region Selection\n"
+            "WW                : Full Screen\n"
+            "EE                : Select Window\n\n"
             "CTRL + UP         : Increase Opacity\n"
             "CTRL + DOWN       : Decrease Opacity\n"
             "CTRL + W          : Change Color\n"
@@ -702,6 +705,31 @@ class StealthWindow(QWidget):
         if event.key() == Qt.Key.Key_Escape:
 
             QApplication.quit()
+
+        # DOUBLE-KEY SCREENSHOT SHORTCUTS (qq / ww / ee)
+        if event.modifiers() == Qt.KeyboardModifier.NoModifier:
+
+            key = event.key()
+            now = time.time()
+
+            if (
+                self._last_key == key and
+                (now - self._last_key_time) < 0.5
+            ):
+                self._last_key = None
+
+                if key == Qt.Key.Key_Q:
+                    self._start_region_capture()
+                    return
+                elif key == Qt.Key.Key_W:
+                    self._start_fullscreen_capture()
+                    return
+                elif key == Qt.Key.Key_E:
+                    self._start_window_capture()
+                    return
+
+            self._last_key      = key
+            self._last_key_time = now
 
         if (
             event.modifiers() ==
