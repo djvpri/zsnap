@@ -1,7 +1,11 @@
 import os
 import random
 import string
+import smtplib
+import threading
 import httpx
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from fastapi import FastAPI, HTTPException, Header, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -29,6 +33,10 @@ with engine.connect() as conn:
 API_SECRET     = os.getenv("API_SECRET", "rahasia-dari-desktop-ke-server")
 PROCESS_SECRET = os.getenv("PROCESS_SECRET", "zomet-secret-2026")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+SMTP_USER  = os.getenv("SMTP_USER")   # Gmail address, e.g. you@gmail.com
+SMTP_PASS  = os.getenv("SMTP_PASS")   # Gmail App Password (16 chars)
+NOTIFY_TO  = os.getenv("NOTIFY_TO", SMTP_USER)  # recipient, defaults to sender
 
 # =========================================================
 # APP
@@ -76,6 +84,38 @@ def generate_license_key(plan: str = ""):
     parts = ["".join(random.choices(chars, k=6)) for _ in range(3)]
     prefix = plan.upper() if plan else "ZOMET"
     return prefix + "-" + "-".join(parts)
+
+def send_demo_notification(phone: str, license_key: str):
+    if not SMTP_USER or not SMTP_PASS or not NOTIFY_TO:
+        return
+
+    def _send():
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = "🎉 Demo Baru - ZOMET AI"
+            msg["From"]    = SMTP_USER
+            msg["To"]      = NOTIFY_TO
+
+            now = datetime.now().strftime("%d %b %Y %H:%M:%S")
+            body = f"""\
+<html><body style="font-family:Arial,sans-serif;color:#222;">
+  <h2 style="color:#00dcb4;">Demo License Baru</h2>
+  <table>
+    <tr><td><b>Waktu</b></td><td>: {now}</td></tr>
+    <tr><td><b>No. HP</b></td><td>: {phone}</td></tr>
+    <tr><td><b>License Key</b></td><td>: <code>{license_key}</code></td></tr>
+  </table>
+</body></html>"""
+
+            msg.attach(MIMEText(body, "html"))
+
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
+                smtp.login(SMTP_USER, SMTP_PASS)
+                smtp.sendmail(SMTP_USER, NOTIFY_TO, msg.as_string())
+        except Exception as e:
+            print("Email notification failed:", e)
+
+    threading.Thread(target=_send, daemon=True).start()
 
 # =========================================================
 # REQUEST MODELS
@@ -139,6 +179,8 @@ def claim_demo(data: DemoClaimRequest, db=Depends(get_db)):
 
     db.add(lic)
     db.commit()
+
+    send_demo_notification(phone, key)
 
     return {"license_key": key}
 
