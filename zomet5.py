@@ -133,10 +133,11 @@ class GeminiWorker(QThread):
 
     finished_signal = pyqtSignal(str)
 
-    def __init__(self, image_path):
+    def __init__(self, image_path, license_key):
         super().__init__()
 
         self.image_path = image_path
+        self.license_key = license_key
 
     def run(self):
 
@@ -157,7 +158,8 @@ class GeminiWorker(QThread):
             # =============================================
 
             payload = {
-                "image": image_base64
+                "image": image_base64,
+                "license_key": self.license_key
             }
 
             headers = {
@@ -538,7 +540,8 @@ class StealthWindow(QWidget):
             )
 
             self.worker = GeminiWorker(
-                temp_path
+                temp_path,
+                ACTIVE_LICENSE_KEY
             )
 
             self.worker.finished_signal.connect(
@@ -578,6 +581,8 @@ class StealthWindow(QWidget):
 # =========================================================
 # MAIN
 # =========================================================
+
+ACTIVE_LICENSE_KEY = ""
 
 if __name__ == "__main__":
 
@@ -629,6 +634,8 @@ if __name__ == "__main__":
             msg.exec()
 
             sys.exit()
+
+        ACTIVE_LICENSE_KEY = license_key
 
     except Exception as e:
 

@@ -98,7 +98,7 @@ async def root():
 # =========================================================
 
 @app.post("/process-image")
-async def process_image(request: Request):
+async def process_image(request: Request, db=Depends(get_db)):
 
     client_key = request.headers.get("X-API-KEY")
 
@@ -109,9 +109,19 @@ async def process_image(request: Request):
         data = await request.json()
 
         image_base64 = data.get("image")
+        license_key  = data.get("license_key")
 
         if not image_base64:
             raise HTTPException(status_code=400, detail="Image not found")
+
+        # Cek usage limit sebelum proses
+        if license_key:
+            lic = db.query(License).filter(License.license_key == license_key).first()
+            if lic:
+                if not lic.active:
+                    raise HTTPException(status_code=403, detail="License inactive")
+                if lic.usage_count >= lic.usage_limit:
+                    raise HTTPException(status_code=403, detail="Usage limit reached")
 
         url = (
             "https://generativelanguage.googleapis.com/"
@@ -152,6 +162,13 @@ async def process_image(request: Request):
 
         print("STATUS:", response.status_code)
         print("BODY:", response.text)
+
+        # Increment usage setelah Gemini berhasil
+        if license_key and response.status_code == 200:
+            lic = db.query(License).filter(License.license_key == license_key).first()
+            if lic:
+                lic.usage_count += 1
+                db.commit()
 
         return response.json()
 
