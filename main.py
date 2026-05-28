@@ -190,7 +190,7 @@ async def process_image(request: Request, db=Depends(get_db)):
                                 "Anda adalah AI OCR dan pembaca soal.\n\n"
                                 "Jika soal pilihan ganda:\n"
                                 "- pilih jawaban terbaik\n"
-                                "- jelaskan singkat\n\n"
+                                "- jelaskan singkat maksimal 1 kalimat\n\n"
                                 "Jika coding:\n"
                                 "- jelaskan error\n"
                                 "- beri solusi\n\n"
