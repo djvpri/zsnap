@@ -1,4 +1,7 @@
-from fastapi import FastAPI, HTTPException, Header, Depends
+import os
+import httpx
+from fastapi import FastAPI, HTTPException, Header, Depends, Request
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime
 from db import SessionLocal, engine
@@ -6,40 +9,160 @@ from model import Base, License
 from license_service import calculate_expiry
 
 Base.metadata.create_all(bind=engine)
-API_SECRET = "rahasia-dari-desktop-ke-server"
+
+# =========================================================
+# CONFIG
+# =========================================================
+
+API_SECRET     = os.getenv("API_SECRET", "rahasia-dari-desktop-ke-server")
+PROCESS_SECRET = os.getenv("PROCESS_SECRET", "zomet-secret-2026")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# =========================================================
+# APP
+# =========================================================
 
 app = FastAPI()
 
-# 1. DEFINISIKAN FUNGSI INI DI ATAS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# =========================================================
+# DEPENDENCIES
+# =========================================================
+
 def verify_token(x_api_key: str = Header(...)):
     if x_api_key != API_SECRET:
         raise HTTPException(status_code=403, detail="Akses ditolak")
 
-# =========================
-# REQUEST MODEL
-# =========================
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# =========================================================
+# REQUEST MODELS
+# =========================================================
+
 class LicenseRequest(BaseModel):
     license_key: str
     hwid: str = None
 
-# =========================
+class CreateLicenseRequest(BaseModel):
+    license_key: str
+    plan: str
+
+# =========================================================
+# ROOT
+# =========================================================
+
+@app.get("/")
+async def root():
+    return {"status": "online", "app": "Zomet API"}
+
+# =========================================================
+# PROCESS IMAGE
+# =========================================================
+
+@app.post("/process-image")
+async def process_image(request: Request):
+
+    client_key = request.headers.get("X-API-KEY")
+
+    if client_key != PROCESS_SECRET:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    try:
+        data = await request.json()
+
+        image_base64 = data.get("image")
+
+        if not image_base64:
+            raise HTTPException(status_code=400, detail="Image not found")
+
+        url = (
+            "https://generativelanguage.googleapis.com/"
+            f"v1beta/models/gemini-2.5-flash:generateContent"
+            f"?key={GEMINI_API_KEY}"
+        )
+
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {
+                            "text": (
+                                "Anda adalah AI OCR dan pembaca soal.\n\n"
+                                "Jika soal pilihan ganda:\n"
+                                "- pilih jawaban terbaik\n"
+                                "- jelaskan singkat\n\n"
+                                "Jika coding:\n"
+                                "- jelaskan error\n"
+                                "- beri solusi\n\n"
+                                "Jangan mendeskripsikan gambar.\n"
+                                "Langsung jawab inti."
+                            )
+                        },
+                        {
+                            "inline_data": {
+                                "mime_type": "image/jpeg",
+                                "data": image_base64
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+
+        async with httpx.AsyncClient(timeout=90) as client:
+            response = await client.post(url, json=payload)
+
+        print("STATUS:", response.status_code)
+        print("BODY:", response.text)
+
+        return response.json()
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# =========================================================
 # VERIFY LICENSE
-# =========================
-# 2. SEKARANG DEKORATOR BISA MENEMUKAN FUNGSI verify_token
-@app.post("/verify-license", dependencies=[Depends(verify_token)])
-def verify(data: LicenseRequest):
-    # ... isi fungsi tetap sama ...
-    db = SessionLocal()
-    lic = db.query(License).filter(License.license_key == data.license_key).first()
+# =========================================================
+
+@app.post("/verify-license")
+def verify(data: LicenseRequest, db=Depends(get_db)):
+
+    lic = db.query(License).filter(
+        License.license_key == data.license_key
+    ).first()
+
     if not lic:
         raise HTTPException(status_code=404, detail="License not found")
+
+    if not lic.active:
+        return {"valid": False, "reason": "license inactive"}
+
     if lic.hwid and lic.hwid != data.hwid:
         return {"valid": False, "reason": "HWID mismatch"}
+
     if not lic.hwid:
         lic.hwid = data.hwid
+
     if lic.expires_at and datetime.now().date() > lic.expires_at:
         return {"valid": False, "reason": "expired"}
+
     db.commit()
+
     return {
         "valid": True,
         "plan": lic.plan,
@@ -48,12 +171,12 @@ def verify(data: LicenseRequest):
         "usage_limit": lic.usage_limit
     }
 
-# =========================
+# =========================================================
 # INCREMENT USAGE
-# =========================
+# =========================================================
+
 @app.post("/increment-usage", dependencies=[Depends(verify_token)])
-def increment(data: LicenseRequest):
-    db = SessionLocal()
+def increment(data: LicenseRequest, db=Depends(get_db)):
 
     lic = db.query(License).filter(
         License.license_key == data.license_key
@@ -62,7 +185,6 @@ def increment(data: LicenseRequest):
     if not lic:
         raise HTTPException(status_code=404, detail="Not found")
 
-    # demo limit
     if lic.plan == "demo" and lic.usage_count >= lic.usage_limit:
         return {"valid": False, "reason": "demo limit reached"}
 
@@ -71,28 +193,23 @@ def increment(data: LicenseRequest):
 
     return {"success": True, "usage_count": lic.usage_count}
 
-
-# =========================
+# =========================================================
 # CREATE LICENSE (ADMIN)
-# =========================
-@app.post("/create-license", dependencies=[Depends(verify_token)])
-def create_license(data: LicenseRequest, plan: str):
-    db = SessionLocal()
+# =========================================================
 
-    expires = calculate_expiry(plan)
+@app.post("/create-license", dependencies=[Depends(verify_token)])
+def create_license(data: CreateLicenseRequest, db=Depends(get_db)):
+
+    expires = calculate_expiry(data.plan)
 
     lic = License(
         license_key=data.license_key,
-        plan=plan,
+        plan=data.plan,
         expires_at=expires.date() if expires else None,
-        usage_limit=5 if plan == "demo" else 999999
+        usage_limit=5 if data.plan == "demo" else 999999
     )
 
     db.add(lic)
     db.commit()
 
-    return {"message": "created", "plan": plan}
-
-def verify_token(x_api_key: str = Header(...)):
-    if x_api_key != API_SECRET:
-        raise HTTPException(status_code=403, detail="Akses ditolak")
+    return {"message": "created", "plan": data.plan}

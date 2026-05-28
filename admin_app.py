@@ -1,19 +1,67 @@
 import streamlit as st
 import requests
 
+# =========================================================
+# AUTENTIKASI ADMIN
+# =========================================================
+
+def check_login():
+    if "logged_in" not in st.session_state:
+        st.session_state.logged_in = False
+
+    if not st.session_state.logged_in:
+        st.title("Zomet Admin — Login")
+
+        password = st.text_input("Password Admin", type="password")
+
+        if st.button("Login"):
+            if password == st.secrets["ADMIN_PASSWORD"]:
+                st.session_state.logged_in = True
+                st.rerun()
+            else:
+                st.error("Password salah!")
+
+        st.stop()
+
+check_login()
+
+# =========================================================
+# DASHBOARD
+# =========================================================
+
+if st.sidebar.button("Logout"):
+    st.session_state.logged_in = False
+    st.rerun()
+
 st.title("Zomet Admin Dashboard")
+
 key = st.text_input("License Key")
-plan = st.selectbox("Plan", ["demo", "weekly", "monthly", "yearly"])
+plan = st.selectbox("Plan", ["demo", "daily", "weekly", "monthly", "yearly"])
 
 if st.button("Create License"):
-    # Kirim request ke API utama Anda
-    res = requests.post(
-        "https://zomet-production.up.railway.app/create-license", 
-        json={"license_key": key}, 
-        params={"plan": plan},
-        headers={"x-api-key": "rahasia-dari-desktop-ke-server"}
-    )
-    if res.status_code == 200:
-        st.success("Lisensi berhasil dibuat!")
-    else:
-        st.error("Gagal!")
+
+    if not key.strip():
+        st.warning("License key tidak boleh kosong!")
+        st.stop()
+
+    try:
+        res = requests.post(
+            "https://zomet-production.up.railway.app/create-license",
+            json={
+                "license_key": key.strip(),
+                "plan": plan
+            },
+            headers={"x-api-key": st.secrets["API_KEY"]},
+            timeout=15
+        )
+
+        if res.status_code == 200:
+            st.success("Lisensi berhasil dibuat!")
+        else:
+            st.error(f"Gagal! Status {res.status_code}\n\n{res.text}")
+
+    except requests.Timeout:
+        st.error("Request timeout. Server terlalu lama merespon.")
+
+    except Exception as e:
+        st.error(f"Error: {str(e)}")
