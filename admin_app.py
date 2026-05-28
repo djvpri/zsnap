@@ -85,6 +85,42 @@ if st.button("Create License"):
         st.error(f"Error: {str(e)}")
 
 # =========================================================
+# MASS GENERATE LICENSE
+# =========================================================
+
+st.divider()
+st.subheader("Mass Generate License")
+
+mass_plan = st.selectbox("Plan", ["demo", "daily", "weekly", "monthly", "yearly"], key="mass_plan")
+quantity = st.number_input("Jumlah License", min_value=1, max_value=100, value=10, step=1)
+
+if st.button("Generate & Create"):
+    try:
+        res = requests.post(
+            "https://zomet-production.up.railway.app/bulk-create-licenses",
+            json={"plan": mass_plan, "quantity": int(quantity)},
+            headers={"x-api-key": st.secrets["API_KEY"]},
+            timeout=30
+        )
+
+        if res.status_code == 200:
+            result = res.json()
+            st.success(f"{result['count']} lisensi berhasil dibuat!")
+            st.text_area(
+                "License Keys (copy dari sini):",
+                value="\n".join(result["created"]),
+                height=200
+            )
+        else:
+            st.error(f"Gagal! Status {res.status_code}\n\n{res.text}")
+
+    except requests.Timeout:
+        st.error("Request timeout.")
+
+    except Exception as e:
+        st.error(f"Error: {str(e)}")
+
+# =========================================================
 # DAFTAR LISENSI
 # =========================================================
 

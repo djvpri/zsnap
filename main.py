@@ -1,4 +1,6 @@
 import os
+import random
+import string
 import httpx
 from fastapi import FastAPI, HTTPException, Header, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -48,6 +50,23 @@ def get_db():
         db.close()
 
 # =========================================================
+# HELPERS
+# =========================================================
+
+USAGE_LIMITS = {
+    "demo":    5,
+    "daily":   100,
+    "weekly":  700,
+    "monthly": 3000,
+    "yearly":  999999
+}
+
+def generate_license_key():
+    chars = string.ascii_uppercase + string.digits
+    parts = ["".join(random.choices(chars, k=6)) for _ in range(3)]
+    return "ZOMET-" + "-".join(parts)
+
+# =========================================================
 # REQUEST MODELS
 # =========================================================
 
@@ -58,6 +77,10 @@ class LicenseRequest(BaseModel):
 class CreateLicenseRequest(BaseModel):
     license_key: str
     plan: str
+
+class BulkCreateRequest(BaseModel):
+    plan: str
+    quantity: int
 
 # =========================================================
 # ROOT
@@ -235,22 +258,40 @@ def create_license(data: CreateLicenseRequest, db=Depends(get_db)):
 
     expires = calculate_expiry(data.plan)
 
-    usage_limits = {
-        "demo":    5,
-        "daily":   100,
-        "weekly":  700,
-        "monthly": 3000,
-        "yearly":  999999
-    }
-
     lic = License(
         license_key=data.license_key,
         plan=data.plan,
         expires_at=expires.date() if expires else None,
-        usage_limit=usage_limits.get(data.plan, 999999)
+        usage_limit=USAGE_LIMITS.get(data.plan, 999999)
     )
 
     db.add(lic)
     db.commit()
 
     return {"message": "created", "plan": data.plan}
+
+# =========================================================
+# BULK CREATE LICENSE (ADMIN)
+# =========================================================
+
+@app.post("/bulk-create-licenses", dependencies=[Depends(verify_token)])
+def bulk_create_licenses(data: BulkCreateRequest, db=Depends(get_db)):
+    if data.quantity < 1 or data.quantity > 100:
+        raise HTTPException(status_code=400, detail="Quantity harus antara 1 dan 100")
+
+    expires = calculate_expiry(data.plan)
+    created = []
+
+    for _ in range(data.quantity):
+        key = generate_license_key()
+        lic = License(
+            license_key=key,
+            plan=data.plan,
+            expires_at=expires.date() if expires else None,
+            usage_limit=USAGE_LIMITS.get(data.plan, 999999)
+        )
+        db.add(lic)
+        created.append(key)
+
+    db.commit()
+    return {"created": created, "count": len(created)}
