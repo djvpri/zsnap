@@ -651,7 +651,7 @@
     <h3 data-i18n="modal_title">Coba Gratis</h3>
     <p data-i18n="modal_sub">Masukkan nomor HP Anda untuk mendapatkan license demo (5x pakai).</p>
 
-    <input type="tel" id="phoneInput" placeholder="08xxxxxxxxxx" maxlength="15" />
+    <input type="tel" id="phoneInput" placeholder="08xxxxxxxxxx" maxlength="15" inputmode="numeric" oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
     <button class="btn btn-primary" style="width:100%;" onclick="claimDemo()" id="claimBtn" data-i18n="modal_btn">Dapatkan License Demo</button>
 
     <div class="modal-error" id="modalError"></div>
@@ -862,6 +862,16 @@
 
     if (!phone) {
       errEl.textContent = saved === 'id' ? 'Nomor HP tidak boleh kosong.' : 'Phone number is required.';
+      errEl.style.display = 'block';
+      return;
+    }
+    if (phone.length < 11) {
+      errEl.textContent = saved === 'id' ? 'Nomor HP minimal 11 angka.' : 'Phone number must be at least 11 digits.';
+      errEl.style.display = 'block';
+      return;
+    }
+    if (phone.length > 15) {
+      errEl.textContent = saved === 'id' ? 'Nomor HP maksimal 15 angka.' : 'Phone number must be at most 15 digits.';
       errEl.style.display = 'block';
       return;
     }
