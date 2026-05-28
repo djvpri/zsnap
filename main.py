@@ -12,6 +12,16 @@ from license_service import calculate_expiry
 
 Base.metadata.create_all(bind=engine)
 
+# Tambah kolom baru jika belum ada (untuk upgrade database lama)
+with engine.connect() as conn:
+    try:
+        conn.execute(__import__("sqlalchemy").text(
+            "ALTER TABLE licenses ADD COLUMN IF NOT EXISTS notes VARCHAR"
+        ))
+        conn.commit()
+    except Exception:
+        pass
+
 # =========================================================
 # CONFIG
 # =========================================================
@@ -86,6 +96,9 @@ class BulkCreateRequest(BaseModel):
 class BulkDeleteRequest(BaseModel):
     license_keys: list[str]
 
+class DemoClaimRequest(BaseModel):
+    phone: str
+
 # =========================================================
 # ROOT
 # =========================================================
@@ -93,6 +106,41 @@ class BulkDeleteRequest(BaseModel):
 @app.get("/")
 async def root():
     return {"status": "online", "app": "Zomet API"}
+
+# =========================================================
+# CLAIM DEMO (PUBLIC)
+# =========================================================
+
+@app.post("/claim-demo")
+def claim_demo(data: DemoClaimRequest, db=Depends(get_db)):
+    phone = data.phone.strip()
+
+    if not phone:
+        raise HTTPException(status_code=400, detail="Phone number required")
+
+    # Cek apakah nomor ini sudah pernah klaim demo
+    existing = db.query(License).filter(
+        License.plan == "demo",
+        License.notes == phone
+    ).first()
+
+    if existing:
+        raise HTTPException(status_code=409, detail="Phone number already claimed a demo license")
+
+    key = generate_license_key("demo")
+
+    lic = License(
+        license_key=key,
+        plan="demo",
+        expires_at=None,
+        usage_limit=USAGE_LIMITS.get("demo", 5),
+        notes=phone
+    )
+
+    db.add(lic)
+    db.commit()
+
+    return {"license_key": key}
 
 # =========================================================
 # PROCESS IMAGE

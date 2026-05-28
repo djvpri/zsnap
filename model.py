@@ -14,3 +14,4 @@ class License(Base):
     usage_limit = Column(Integer, default=5)
 
     active = Column(Boolean, default=True)
+    notes  = Column(String, nullable=True)

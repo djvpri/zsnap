@@ -320,6 +320,105 @@
       .step:not(:last-child)::after { display: none; }
     }
 
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.75);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #141414;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 420px;
+      margin: 20px;
+      position: relative;
+    }
+    .modal h3 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .modal p { color: var(--muted); font-size: .9rem; margin-bottom: 24px; }
+
+    .modal-close {
+      position: absolute;
+      top: 16px; right: 20px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .modal-close:hover { color: var(--text); }
+
+    .modal input {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 1rem;
+      margin-bottom: 14px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .modal input:focus { border-color: var(--accent); }
+
+    .modal-result {
+      display: none;
+      margin-top: 20px;
+      padding: 16px;
+      background: rgba(0,220,180,.07);
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      text-align: center;
+    }
+    .modal-result .result-label {
+      font-size: .8rem;
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+    }
+    .modal-result .result-key {
+      font-family: 'Consolas', monospace;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+      word-break: break-all;
+    }
+    .copy-btn {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 20px;
+      font-weight: 700;
+      font-size: .85rem;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+    .copy-btn:hover { opacity: .85; }
+    .modal-error {
+      display: none;
+      color: #ff6b6b;
+      font-size: .85rem;
+      margin-top: 10px;
+      text-align: center;
+    }
+
     /* ── WA BUTTON ── */
     .wa-btn {
       position: fixed;
@@ -490,6 +589,7 @@
         <div class="price-amount" data-i18n="p0_amount">Gratis</div>
         <div class="price-period" data-i18n="p0_period">sekali pakai</div>
         <div class="price-limit"  data-i18n="p0_limit">5x penggunaan</div>
+        <button class="btn btn-outline" onclick="openModal()" style="width:100%;margin-top:16px;padding:9px;" data-i18n="p0_btn">Coba Gratis</button>
       </div>
       <div class="price-card">
         <div class="price-plan">DAILY</div>
@@ -543,6 +643,26 @@
   <div style="color:var(--accent);font-weight:800;letter-spacing:2px;margin-bottom:8px;">ZOMET AI</div>
   <div data-i18n="footer_copy">© 2025 ZOMET AI. All rights reserved.</div>
 </footer>
+
+<!-- DEMO MODAL -->
+<div class="modal-overlay" id="demoModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <h3 data-i18n="modal_title">Coba Gratis</h3>
+    <p data-i18n="modal_sub">Masukkan nomor HP Anda untuk mendapatkan license demo (5x pakai).</p>
+
+    <input type="tel" id="phoneInput" placeholder="08xxxxxxxxxx" maxlength="15" />
+    <button class="btn btn-primary" style="width:100%;" onclick="claimDemo()" id="claimBtn" data-i18n="modal_btn">Dapatkan License Demo</button>
+
+    <div class="modal-error" id="modalError"></div>
+
+    <div class="modal-result" id="modalResult">
+      <div class="result-label" data-i18n="modal_result_label">LICENSE KEY ANDA</div>
+      <div class="result-key" id="resultKey"></div>
+      <button class="copy-btn" onclick="copyKey()" id="copyBtn" data-i18n="modal_copy">Salin</button>
+    </div>
+  </div>
+</div>
 
 <!-- WA FLOATING BUTTON -->
 <a class="wa-btn" href="https://wa.me/6282153533164" target="_blank" rel="noopener">
@@ -619,7 +739,13 @@
       dl_note:  "Windows 10/11 · 64-bit · ~80 MB",
 
       footer_copy: "© 2025 ZOMET AI. Hak cipta dilindungi.",
-      wa_tooltip:  "Chat via WhatsApp"
+      wa_tooltip:  "Chat via WhatsApp",
+      modal_title: "Coba Gratis",
+      modal_sub:   "Masukkan nomor HP Anda untuk mendapatkan license demo (5x pakai).",
+      modal_btn:   "Dapatkan License Demo",
+      modal_result_label: "LICENSE KEY ANDA",
+      modal_copy:  "Salin",
+      p0_btn:      "Coba Gratis"
     },
 
     en: {
@@ -686,7 +812,13 @@
       dl_note:  "Windows 10/11 · 64-bit · ~80 MB",
 
       footer_copy: "© 2025 ZOMET AI. All rights reserved.",
-      wa_tooltip:  "Chat via WhatsApp"
+      wa_tooltip:  "Chat via WhatsApp",
+      modal_title: "Try For Free",
+      modal_sub:   "Enter your phone number to get a demo license (5 uses).",
+      modal_btn:   "Get Demo License",
+      modal_result_label: "YOUR LICENSE KEY",
+      modal_copy:  "Copy",
+      p0_btn:      "Try Free"
     }
   };
 
@@ -704,6 +836,78 @@
 
   const saved = localStorage.getItem('zomet_lang') || 'id';
   setLang(saved);
+
+  // ── MODAL ──
+  function openModal() {
+    document.getElementById('demoModal').classList.add('open');
+    document.getElementById('phoneInput').focus();
+    document.getElementById('modalResult').style.display = 'none';
+    document.getElementById('modalError').style.display  = 'none';
+    document.getElementById('phoneInput').value = '';
+  }
+
+  function closeModal() {
+    document.getElementById('demoModal').classList.remove('open');
+  }
+
+  document.getElementById('demoModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  async function claimDemo() {
+    const phone = document.getElementById('phoneInput').value.trim();
+    const errEl = document.getElementById('modalError');
+    const btn   = document.getElementById('claimBtn');
+    errEl.style.display = 'none';
+
+    if (!phone) {
+      errEl.textContent = saved === 'id' ? 'Nomor HP tidak boleh kosong.' : 'Phone number is required.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    btn.textContent = saved === 'id' ? 'Memproses...' : 'Processing...';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('https://zomet-production.up.railway.app/claim-demo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        document.getElementById('resultKey').textContent = data.license_key;
+        document.getElementById('modalResult').style.display = 'block';
+      } else if (res.status === 409) {
+        errEl.textContent = saved === 'id'
+          ? 'Nomor ini sudah pernah klaim demo. Hubungi admin untuk upgrade.'
+          : 'This number already claimed a demo. Contact admin to upgrade.';
+        errEl.style.display = 'block';
+      } else {
+        errEl.textContent = saved === 'id' ? 'Terjadi kesalahan. Coba lagi.' : 'An error occurred. Please try again.';
+        errEl.style.display = 'block';
+      }
+    } catch (e) {
+      errEl.textContent = saved === 'id' ? 'Tidak dapat terhubung ke server.' : 'Unable to connect to server.';
+      errEl.style.display = 'block';
+    }
+
+    btn.disabled = false;
+    btn.textContent = document.querySelector('[data-i18n="modal_btn"]')?.getAttribute('data-i18n-val') ||
+      (saved === 'id' ? 'Dapatkan License Demo' : 'Get Demo License');
+  }
+
+  function copyKey() {
+    const key = document.getElementById('resultKey').textContent;
+    navigator.clipboard.writeText(key).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = saved === 'id' ? 'Tersalin!' : 'Copied!';
+      setTimeout(() => btn.textContent = saved === 'id' ? 'Salin' : 'Copy', 2000);
+    });
+  }
 </script>
 
 </body>
