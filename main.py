@@ -101,11 +101,6 @@ async def root():
 @app.post("/process-image")
 async def process_image(request: Request, db=Depends(get_db)):
 
-    client_key = request.headers.get("X-API-KEY")
-
-    if client_key != PROCESS_SECRET:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-
     try:
         data = await request.json()
 
@@ -115,14 +110,19 @@ async def process_image(request: Request, db=Depends(get_db)):
         if not image_base64:
             raise HTTPException(status_code=400, detail="Image not found")
 
-        # Cek usage limit sebelum proses
-        if license_key:
-            lic = db.query(License).filter(License.license_key == license_key).first()
-            if lic:
-                if not lic.active:
-                    raise HTTPException(status_code=403, detail="License inactive")
-                if lic.usage_count >= lic.usage_limit:
-                    raise HTTPException(status_code=403, detail="Usage limit reached")
+        if not license_key:
+            raise HTTPException(status_code=401, detail="License key required")
+
+        # Validasi license
+        lic = db.query(License).filter(License.license_key == license_key).first()
+        if not lic:
+            raise HTTPException(status_code=403, detail="License not found")
+        if not lic.active:
+            raise HTTPException(status_code=403, detail="License inactive")
+        if lic.expires_at and datetime.now().date() > lic.expires_at:
+            raise HTTPException(status_code=403, detail="License expired")
+        if lic.usage_count >= lic.usage_limit:
+            raise HTTPException(status_code=403, detail="Usage limit reached")
 
         url = (
             "https://generativelanguage.googleapis.com/"

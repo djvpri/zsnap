@@ -37,8 +37,6 @@ import mss
 
 BASE_URL = "https://zomet-production.up.railway.app/process-image"
 
-API_KEY = "zomet-secret-2026"
-
 APP_TITLE = "ZOMET AI"
 
 WINDOW_OPACITY = 0.35
@@ -162,14 +160,9 @@ class GeminiWorker(QThread):
                 "license_key": self.license_key
             }
 
-            headers = {
-                "X-API-KEY": API_KEY
-            }
-
             response = requests.post(
                 BASE_URL,
                 json=payload,
-                headers=headers,
                 timeout=90
             )
 
@@ -195,6 +188,12 @@ class GeminiWorker(QThread):
                             "Lisensi tidak aktif.\n\n"
                             "Hubungi admin untuk\n"
                             "mengaktifkan kembali."
+                        )
+                    elif "License expired" in detail:
+                        msg = (
+                            "Lisensi sudah kadaluarsa.\n\n"
+                            "Silakan hubungi admin untuk\n"
+                            "perpanjang lisensi."
                         )
                     else:
                         msg = "Akses ditolak. Hubungi admin."
