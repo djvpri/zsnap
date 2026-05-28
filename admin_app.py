@@ -75,6 +75,7 @@ if st.button("Create License"):
 
         if res.status_code == 200:
             st.success("Lisensi berhasil dibuat!")
+            st.code(key.strip(), language=None)
         else:
             st.error(f"Gagal! Status {res.status_code}\n\n{res.text}")
 
@@ -106,11 +107,8 @@ if st.button("Generate & Create"):
         if res.status_code == 200:
             result = res.json()
             st.success(f"{result['count']} lisensi berhasil dibuat!")
-            st.text_area(
-                "License Keys (copy dari sini):",
-                value="\n".join(result["created"]),
-                height=200
-            )
+            st.caption("License Keys (klik ikon copy di pojok kanan):")
+            st.code("\n".join(result["created"]), language=None)
         else:
             st.error(f"Gagal! Status {res.status_code}\n\n{res.text}")
 
