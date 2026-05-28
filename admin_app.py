@@ -104,10 +104,34 @@ try:
     if res.status_code == 200:
         data = res.json()
         if data:
-            st.dataframe(
-                data,
-                use_container_width=True
-            )
+            st.dataframe(data, use_container_width=True)
+
+            st.divider()
+            st.subheader("Hapus Lisensi")
+
+            keys = [lic["license_key"] for lic in data]
+            selected_key = st.selectbox("Pilih License Key", keys)
+
+            confirm = st.checkbox(f'Konfirmasi hapus "{selected_key}"')
+
+            if st.button("Hapus", type="primary", disabled=not confirm):
+                try:
+                    del_res = requests.delete(
+                        f"https://zomet-production.up.railway.app/delete-license/{selected_key}",
+                        headers={"x-api-key": st.secrets["API_KEY"]},
+                        timeout=15
+                    )
+                    if del_res.status_code == 200:
+                        st.success(f"Lisensi {selected_key} berhasil dihapus!")
+                        st.rerun()
+                    else:
+                        st.error(f"Gagal! Status {del_res.status_code}\n\n{del_res.text}")
+
+                except requests.Timeout:
+                    st.error("Request timeout.")
+
+                except Exception as ex:
+                    st.error(f"Error: {str(ex)}")
         else:
             st.info("Belum ada lisensi.")
     else:

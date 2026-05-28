@@ -214,6 +214,19 @@ def list_licenses(db=Depends(get_db)):
     ]
 
 # =========================================================
+# DELETE LICENSE (ADMIN)
+# =========================================================
+
+@app.delete("/delete-license/{license_key}", dependencies=[Depends(verify_token)])
+def delete_license(license_key: str, db=Depends(get_db)):
+    lic = db.query(License).filter(License.license_key == license_key).first()
+    if not lic:
+        raise HTTPException(status_code=404, detail="License not found")
+    db.delete(lic)
+    db.commit()
+    return {"message": "deleted"}
+
+# =========================================================
 # CREATE LICENSE (ADMIN)
 # =========================================================
 
