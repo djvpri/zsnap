@@ -6,26 +6,23 @@
   <title>ZOMET AI — AI Screenshot Solver</title>
   <style>
     :root {
-      --bg:       #090909;
-      --card:     #111111;
-      --border:   #1e1e1e;
-      --accent:   #00dcb4;
-      --accent2:  #00aaff;
-      --text:     #f0f0f0;
-      --muted:    #666666;
+      --bg:      #090909;
+      --card:    #111111;
+      --border:  #1e1e1e;
+      --accent:  #00dcb4;
+      --accent2: #00aaff;
+      --text:    #f0f0f0;
+      --muted:   #666666;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     html { scroll-behavior: smooth; }
-
     body {
       background: var(--bg);
       color: var(--text);
       font-family: 'Segoe UI', system-ui, sans-serif;
       line-height: 1.6;
     }
-
     a { color: inherit; text-decoration: none; }
 
     /* ── NAV ── */
@@ -37,26 +34,49 @@
       align-items: center;
       justify-content: space-between;
       padding: 18px 48px;
-      background: rgba(9,9,9,0.85);
+      background: rgba(9,9,9,0.88);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
     }
-
     .nav-logo {
       font-size: 1.3rem;
       font-weight: 800;
       letter-spacing: 2px;
       color: var(--accent);
     }
-
-    .nav-links { display: flex; gap: 32px; }
-
+    .nav-links { display: flex; gap: 32px; align-items: center; }
     .nav-links a {
       font-size: .9rem;
       color: var(--muted);
       transition: color .2s;
     }
     .nav-links a:hover { color: var(--text); }
+
+    /* Language toggle */
+    .lang-toggle {
+      display: flex;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .lang-btn {
+      padding: 5px 13px;
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--muted);
+      transition: background .2s, color .2s;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      letter-spacing: .5px;
+    }
+    .lang-btn.active {
+      background: var(--accent);
+      color: #000;
+      border-radius: 999px;
+    }
 
     .btn {
       display: inline-block;
@@ -68,16 +88,8 @@
       transition: opacity .2s, transform .15s;
     }
     .btn:hover { opacity: .85; transform: translateY(-1px); }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #000;
-    }
-
-    .btn-outline {
-      border: 1.5px solid var(--accent);
-      color: var(--accent);
-    }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-outline  { border: 1.5px solid var(--accent); color: var(--accent); }
 
     /* ── HERO ── */
     .hero {
@@ -91,7 +103,6 @@
       position: relative;
       overflow: hidden;
     }
-
     .hero::before {
       content: '';
       position: absolute;
@@ -99,10 +110,9 @@
       border-radius: 50%;
       background: radial-gradient(circle, rgba(0,220,180,.08) 0%, transparent 70%);
       top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translate(-50%,-50%);
       pointer-events: none;
     }
-
     .badge {
       display: inline-block;
       padding: 6px 16px;
@@ -114,7 +124,6 @@
       letter-spacing: 1px;
       margin-bottom: 24px;
     }
-
     .hero h1 {
       font-size: clamp(2.8rem, 8vw, 5.5rem);
       font-weight: 900;
@@ -122,34 +131,21 @@
       line-height: 1.1;
       margin-bottom: 24px;
     }
-
     .hero h1 span {
       background: linear-gradient(90deg, var(--accent), var(--accent2));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-
     .hero p {
       font-size: clamp(1rem, 2.5vw, 1.25rem);
       color: var(--muted);
       max-width: 560px;
       margin: 0 auto 40px;
     }
+    .hero-buttons { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
 
-    .hero-buttons {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    /* ── APP MOCKUP ── */
-    .mockup-wrapper {
-      margin-top: 72px;
-      position: relative;
-      display: inline-block;
-    }
-
+    /* ── MOCKUP ── */
+    .mockup-wrapper { margin-top: 72px; display: inline-block; }
     .app-window {
       background: rgba(0,0,0,.92);
       border: 2px solid var(--accent);
@@ -164,7 +160,6 @@
       box-shadow: 0 0 40px rgba(0,220,180,.15);
       line-height: 1.8;
     }
-
     .app-window .title {
       font-size: 1rem;
       letter-spacing: 2px;
@@ -172,9 +167,7 @@
       padding-bottom: 10px;
       border-bottom: 1px solid rgba(0,220,180,.2);
     }
-
     .app-window .dim { color: rgba(0,220,180,.45); }
-
     .cursor {
       display: inline-block;
       width: 8px; height: 14px;
@@ -182,17 +175,11 @@
       vertical-align: middle;
       animation: blink 1s step-end infinite;
     }
-
     @keyframes blink { 50% { opacity: 0; } }
 
     /* ── SECTIONS ── */
     section { padding: 100px 24px; }
-
-    .container {
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-
+    .container { max-width: 1100px; margin: 0 auto; }
     .section-label {
       text-align: center;
       font-size: .8rem;
@@ -201,14 +188,12 @@
       color: var(--accent);
       margin-bottom: 12px;
     }
-
     .section-title {
       text-align: center;
       font-size: clamp(1.8rem, 4vw, 2.6rem);
       font-weight: 800;
       margin-bottom: 16px;
     }
-
     .section-sub {
       text-align: center;
       color: var(--muted);
@@ -222,7 +207,6 @@
       grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
       gap: 20px;
     }
-
     .feature-card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -230,28 +214,13 @@
       padding: 28px;
       transition: border-color .2s, transform .2s;
     }
+    .feature-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+    .feature-icon { font-size: 1.8rem; margin-bottom: 14px; }
+    .feature-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+    .feature-card p  { color: var(--muted); font-size: .9rem; }
 
-    .feature-card:hover {
-      border-color: var(--accent);
-      transform: translateY(-4px);
-    }
-
-    .feature-icon {
-      font-size: 1.8rem;
-      margin-bottom: 14px;
-    }
-
-    .feature-card h3 {
-      font-size: 1.05rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .feature-card p { color: var(--muted); font-size: .9rem; }
-
-    /* ── HOW IT WORKS ── */
+    /* ── STEPS ── */
     #cara-pakai { background: #0d0d0d; }
-
     .steps {
       display: flex;
       gap: 0;
@@ -259,7 +228,6 @@
       flex-wrap: wrap;
       justify-content: center;
     }
-
     .step {
       flex: 1;
       min-width: 200px;
@@ -268,16 +236,13 @@
       padding: 0 24px;
       position: relative;
     }
-
     .step:not(:last-child)::after {
       content: '→';
       position: absolute;
-      right: -8px;
-      top: 24px;
+      right: -8px; top: 24px;
       color: var(--accent);
       font-size: 1.4rem;
     }
-
     .step-num {
       width: 52px; height: 52px;
       border-radius: 50%;
@@ -290,7 +255,6 @@
       justify-content: center;
       margin: 0 auto 16px;
     }
-
     .step h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
     .step p  { color: var(--muted); font-size: .88rem; }
 
@@ -302,7 +266,6 @@
       max-width: 900px;
       margin: 0 auto;
     }
-
     .price-card {
       background: var(--card);
       border: 1px solid var(--border);
@@ -312,20 +275,11 @@
       transition: border-color .2s, transform .2s;
       position: relative;
     }
-
-    .price-card:hover {
-      border-color: var(--accent);
-      transform: translateY(-4px);
-    }
-
-    .price-card.popular {
-      border-color: var(--accent);
-    }
-
+    .price-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+    .price-card.popular { border-color: var(--accent); }
     .popular-badge {
       position: absolute;
-      top: -12px;
-      left: 50%;
+      top: -12px; left: 50%;
       transform: translateX(-50%);
       background: var(--accent);
       color: #000;
@@ -335,33 +289,10 @@
       border-radius: 999px;
       white-space: nowrap;
     }
-
-    .price-plan {
-      font-size: .75rem;
-      font-weight: 700;
-      letter-spacing: 2px;
-      color: var(--accent);
-      margin-bottom: 8px;
-    }
-
-    .price-amount {
-      font-size: 1.9rem;
-      font-weight: 900;
-      margin-bottom: 4px;
-    }
-
-    .price-period {
-      font-size: .8rem;
-      color: var(--muted);
-      margin-bottom: 16px;
-    }
-
-    .price-limit {
-      font-size: .82rem;
-      color: var(--muted);
-      padding-top: 14px;
-      border-top: 1px solid var(--border);
-    }
+    .price-plan   { font-size: .75rem; font-weight: 700; letter-spacing: 2px; color: var(--accent); margin-bottom: 8px; }
+    .price-amount { font-size: 1.9rem; font-weight: 900; margin-bottom: 4px; }
+    .price-period { font-size: .8rem; color: var(--muted); margin-bottom: 16px; }
+    .price-limit  { font-size: .82rem; color: var(--muted); padding-top: 14px; border-top: 1px solid var(--border); }
 
     /* ── CTA ── */
     #download {
@@ -370,26 +301,10 @@
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
     }
+    #download h2 { font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900; margin-bottom: 16px; }
+    #download p  { color: var(--muted); margin-bottom: 40px; font-size: 1rem; }
+    .download-note { margin-top: 16px; font-size: .82rem; color: var(--muted); }
 
-    #download h2 {
-      font-size: clamp(1.8rem, 4vw, 2.8rem);
-      font-weight: 900;
-      margin-bottom: 16px;
-    }
-
-    #download p {
-      color: var(--muted);
-      margin-bottom: 40px;
-      font-size: 1rem;
-    }
-
-    .download-note {
-      margin-top: 16px;
-      font-size: .82rem;
-      color: var(--muted);
-    }
-
-    /* ── FOOTER ── */
     footer {
       text-align: center;
       padding: 40px 24px;
@@ -398,7 +313,6 @@
       border-top: 1px solid var(--border);
     }
 
-    /* ── RESPONSIVE ── */
     @media (max-width: 640px) {
       nav { padding: 16px 20px; }
       .nav-links { display: none; }
@@ -412,24 +326,27 @@
 <nav>
   <div class="nav-logo">ZOMET</div>
   <div class="nav-links">
-    <a href="#fitur">Fitur</a>
-    <a href="#cara-pakai">Cara Pakai</a>
-    <a href="#harga">Harga</a>
-    <a href="#download">Download</a>
+    <a href="#fitur"     data-i18n="nav_features">Fitur</a>
+    <a href="#cara-pakai" data-i18n="nav_how">Cara Pakai</a>
+    <a href="#harga"     data-i18n="nav_pricing">Harga</a>
+    <a href="#download"  data-i18n="nav_download">Download</a>
+    <div class="lang-toggle">
+      <button class="lang-btn" id="btn-id" onclick="setLang('id')">ID</button>
+      <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+    </div>
   </div>
-  <a href="#download" class="btn btn-primary" style="padding:10px 20px;font-size:.85rem;">Download Gratis</a>
+  <a href="#download" class="btn btn-primary" style="padding:10px 20px;font-size:.85rem;" data-i18n="nav_cta">Download Gratis</a>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="badge">✦ POWERED BY GEMINI 2.5 FLASH</div>
-  <h1>Screenshot.<br><span>Langsung Dijawab.</span></h1>
-  <p>ZOMET AI membaca soal dari screenshot dan memberikan jawaban instan. Tersembunyi di layar, tidak ketahuan.</p>
+  <div class="badge" data-i18n="hero_badge">✦ POWERED BY GEMINI 2.5 FLASH</div>
+  <h1 data-i18n="hero_h1_raw">Screenshot.<br><span data-i18n="hero_h1_span">Langsung Dijawab.</span></h1>
+  <p data-i18n="hero_p">ZOMET AI membaca soal dari screenshot dan memberikan jawaban instan. Tersembunyi di layar, tidak ketahuan.</p>
   <div class="hero-buttons">
-    <a href="#download" class="btn btn-primary">Download Gratis</a>
-    <a href="#fitur" class="btn btn-outline">Lihat Fitur</a>
+    <a href="#download" class="btn btn-primary" data-i18n="hero_btn1">Download Gratis</a>
+    <a href="#fitur"    class="btn btn-outline"  data-i18n="hero_btn2">Lihat Fitur</a>
   </div>
-
   <div class="mockup-wrapper">
     <div class="app-window">
       <div class="title">⚡ ZOMET AI</div>
@@ -438,10 +355,10 @@
       <br>
       <div class="dim">CTRL + UP &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: Opacity ▲</div>
       <div class="dim">CTRL + DOWN &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: Opacity ▼</div>
-      <div class="dim">CTRL + W &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: Ganti Warna</div>
+      <div class="dim">CTRL + W &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: Change Color</div>
       <div class="dim">ESC &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: Exit</div>
       <br>
-      <div>Jawaban: Pilihan B adalah yang benar karena<span class="cursor"></span></div>
+      <div data-i18n="mockup_answer">Jawaban: Pilihan B adalah yang benar karena<span class="cursor"></span></div>
     </div>
   </div>
 </section>
@@ -449,40 +366,39 @@
 <!-- FITUR -->
 <section id="fitur">
   <div class="container">
-    <div class="section-label">FITUR UTAMA</div>
-    <h2 class="section-title">Semua yang kamu butuhkan</h2>
-    <p class="section-sub">Dirancang untuk tetap tersembunyi sambil memberikan jawaban yang akurat dan cepat.</p>
-
+    <div class="section-label" data-i18n="feat_label">FITUR UTAMA</div>
+    <h2 class="section-title" data-i18n="feat_title">Semua yang kamu butuhkan</h2>
+    <p class="section-sub"    data-i18n="feat_sub">Dirancang untuk tetap tersembunyi sambil memberikan jawaban yang akurat dan cepat.</p>
     <div class="features-grid">
       <div class="feature-card">
         <div class="feature-icon">🤖</div>
-        <h3>AI Gemini 2.5 Flash</h3>
-        <p>Bukan sekadar OCR. ZOMET membaca konteks soal dan menjawab dengan penjelasan singkat yang mudah dipahami.</p>
+        <h3 data-i18n="f1_h">AI Gemini 2.5 Flash</h3>
+        <p  data-i18n="f1_p">Bukan sekadar OCR. ZOMET membaca konteks soal dan menjawab dengan penjelasan singkat yang mudah dipahami.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">👻</div>
-        <h3>Mode Tersembunyi</h3>
-        <p>Jendela transparan yang selalu di atas layar. Opacity bisa diatur dari terang sampai hampir tidak terlihat.</p>
+        <h3 data-i18n="f2_h">Mode Tersembunyi</h3>
+        <p  data-i18n="f2_p">Jendela transparan yang selalu di atas layar. Opacity bisa diatur dari terang sampai hampir tidak terlihat.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">⚡</div>
-        <h3>Jawaban dalam Detik</h3>
-        <p>Klik kanan → pilih area soal → jawaban muncul. Prosesnya cepat, tidak perlu mengetik apapun.</p>
+        <h3 data-i18n="f3_h">Jawaban dalam Detik</h3>
+        <p  data-i18n="f3_p">Klik kanan → pilih area soal → jawaban muncul. Prosesnya cepat, tidak perlu mengetik apapun.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">📚</div>
-        <h3>Serba Bisa</h3>
-        <p>Soal pilihan ganda, essay, rumus matematika, hingga error pada kode program — semua bisa ditangani.</p>
+        <h3 data-i18n="f4_h">Serba Bisa</h3>
+        <p  data-i18n="f4_p">Soal pilihan ganda, essay, rumus matematika, hingga error pada kode program — semua bisa ditangani.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">🔒</div>
-        <h3>License Per Perangkat</h3>
-        <p>Satu license terikat ke satu perangkat. Aman dari penyebaran ilegal.</p>
+        <h3 data-i18n="f5_h">License Per Perangkat</h3>
+        <p  data-i18n="f5_p">Satu license terikat ke satu perangkat. Aman dari penyebaran ilegal.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">📦</div>
-        <h3>Tinggal Pakai</h3>
-        <p>Tidak perlu install Python atau library apapun. Download file .exe, klik dua kali, langsung jalan.</p>
+        <h3 data-i18n="f6_h">Tinggal Pakai</h3>
+        <p  data-i18n="f6_p">Tidak perlu install Python atau library apapun. Download file .exe, klik dua kali, langsung jalan.</p>
       </div>
     </div>
   </div>
@@ -491,25 +407,24 @@
 <!-- CARA PAKAI -->
 <section id="cara-pakai">
   <div class="container">
-    <div class="section-label">CARA PAKAI</div>
-    <h2 class="section-title">Semudah 3 langkah</h2>
-    <p class="section-sub">Tidak ada konfigurasi rumit. Download, masukkan license, langsung pakai.</p>
-
+    <div class="section-label" data-i18n="how_label">CARA PAKAI</div>
+    <h2 class="section-title" data-i18n="how_title">Semudah 3 langkah</h2>
+    <p class="section-sub"    data-i18n="how_sub">Tidak ada konfigurasi rumit. Download, masukkan license, langsung pakai.</p>
     <div class="steps">
       <div class="step">
         <div class="step-num">1</div>
-        <h3>Download & Jalankan</h3>
-        <p>Download ZOMET.exe, klik dua kali. Masukkan license key yang sudah dibeli.</p>
+        <h3 data-i18n="s1_h">Download & Jalankan</h3>
+        <p  data-i18n="s1_p">Download ZOMET.exe, klik dua kali. Masukkan license key yang sudah dibeli.</p>
       </div>
       <div class="step">
         <div class="step-num">2</div>
-        <h3>Screenshot Soal</h3>
-        <p>Klik kanan pada jendela ZOMET, lalu drag untuk memilih area soal di layar.</p>
+        <h3 data-i18n="s2_h">Screenshot Soal</h3>
+        <p  data-i18n="s2_p">Klik kanan pada jendela ZOMET, lalu drag untuk memilih area soal di layar.</p>
       </div>
       <div class="step">
         <div class="step-num">3</div>
-        <h3>Dapat Jawaban</h3>
-        <p>AI langsung menganalisa dan menampilkan jawaban beserta penjelasan singkat.</p>
+        <h3 data-i18n="s3_h">Dapat Jawaban</h3>
+        <p  data-i18n="s3_p">AI langsung menganalisa dan menampilkan jawaban beserta penjelasan singkat.</p>
       </div>
     </div>
   </div>
@@ -518,69 +433,220 @@
 <!-- HARGA -->
 <section id="harga">
   <div class="container">
-    <div class="section-label">HARGA</div>
-    <h2 class="section-title">Pilih paket sesuai kebutuhan</h2>
-    <p class="section-sub">Coba gratis dulu dengan paket Demo. Tidak perlu kartu kredit.</p>
-
+    <div class="section-label" data-i18n="price_label">HARGA</div>
+    <h2 class="section-title" data-i18n="price_title">Pilih paket sesuai kebutuhan</h2>
+    <p class="section-sub"    data-i18n="price_sub">Coba gratis dulu dengan paket Demo. Tidak perlu kartu kredit.</p>
     <div class="pricing-grid">
       <div class="price-card">
         <div class="price-plan">DEMO</div>
-        <div class="price-amount">Gratis</div>
-        <div class="price-period">sekali pakai</div>
-        <div class="price-limit">5x penggunaan</div>
+        <div class="price-amount" data-i18n="p0_amount">Gratis</div>
+        <div class="price-period" data-i18n="p0_period">sekali pakai</div>
+        <div class="price-limit"  data-i18n="p0_limit">5x penggunaan</div>
       </div>
       <div class="price-card">
         <div class="price-plan">DAILY</div>
         <div class="price-amount">Rp 5K</div>
-        <div class="price-period">1 hari</div>
-        <div class="price-limit">100x penggunaan</div>
+        <div class="price-period" data-i18n="p1_period">1 hari</div>
+        <div class="price-limit"  data-i18n="p1_limit">100x penggunaan</div>
       </div>
       <div class="price-card popular">
-        <div class="popular-badge">TERPOPULER</div>
+        <div class="popular-badge" data-i18n="popular_badge">TERPOPULER</div>
         <div class="price-plan">WEEKLY</div>
         <div class="price-amount">Rp 15K</div>
-        <div class="price-period">7 hari</div>
-        <div class="price-limit">700x penggunaan</div>
+        <div class="price-period" data-i18n="p2_period">7 hari</div>
+        <div class="price-limit"  data-i18n="p2_limit">700x penggunaan</div>
       </div>
       <div class="price-card">
         <div class="price-plan">MONTHLY</div>
         <div class="price-amount">Rp 40K</div>
-        <div class="price-period">30 hari</div>
-        <div class="price-limit">3.000x penggunaan</div>
+        <div class="price-period" data-i18n="p3_period">30 hari</div>
+        <div class="price-limit"  data-i18n="p3_limit">3.000x penggunaan</div>
       </div>
       <div class="price-card">
         <div class="price-plan">YEARLY</div>
         <div class="price-amount">Rp 150K</div>
-        <div class="price-period">1 tahun</div>
-        <div class="price-limit">Unlimited</div>
+        <div class="price-period" data-i18n="p4_period">1 tahun</div>
+        <div class="price-limit"  data-i18n="p4_limit">Unlimited</div>
       </div>
     </div>
-
-    <p style="text-align:center;color:var(--muted);margin-top:32px;font-size:.88rem;">
+    <p style="text-align:center;color:var(--muted);margin-top:32px;font-size:.88rem;" data-i18n="price_contact">
       Untuk pembelian license, hubungi kami via WhatsApp / DM Instagram.
     </p>
   </div>
 </section>
 
-<!-- DOWNLOAD CTA -->
+<!-- DOWNLOAD -->
 <section id="download">
   <div class="container">
-    <h2>Siap mencoba?</h2>
-    <p>Download gratis, coba 5x tanpa perlu beli. License key demo tersedia gratis.</p>
+    <h2 data-i18n="dl_title">Siap mencoba?</h2>
+    <p  data-i18n="dl_sub">Download gratis, coba 5x tanpa perlu beli. License key demo tersedia gratis.</p>
     <a href="https://github.com/djvpri/zomet/releases/latest/download/ZOMET.exe"
        class="btn btn-primary"
-       style="font-size:1.05rem;padding:14px 36px;">
+       style="font-size:1.05rem;padding:14px 36px;"
+       data-i18n="dl_btn">
       ⬇ Download ZOMET.exe
     </a>
-    <div class="download-note">Windows 10/11 · 64-bit · ~80 MB</div>
+    <div class="download-note" data-i18n="dl_note">Windows 10/11 · 64-bit · ~80 MB</div>
   </div>
 </section>
 
 <!-- FOOTER -->
 <footer>
   <div style="color:var(--accent);font-weight:800;letter-spacing:2px;margin-bottom:8px;">ZOMET AI</div>
-  <div>© 2025 ZOMET AI. All rights reserved.</div>
+  <div data-i18n="footer_copy">© 2025 ZOMET AI. All rights reserved.</div>
 </footer>
+
+<!-- ── i18n ── -->
+<script>
+  const translations = {
+    id: {
+      nav_features: "Fitur",
+      nav_how:      "Cara Pakai",
+      nav_pricing:  "Harga",
+      nav_download: "Download",
+      nav_cta:      "Download Gratis",
+
+      hero_badge:   "✦ DIDUKUNG GEMINI 2.5 FLASH",
+      hero_h1_span: "Langsung Dijawab.",
+      hero_p:       "ZOMET AI membaca soal dari screenshot dan memberikan jawaban instan. Tersembunyi di layar, tidak ketahuan.",
+      hero_btn1:    "Download Gratis",
+      hero_btn2:    "Lihat Fitur",
+      mockup_answer:"Jawaban: Pilihan B adalah yang benar karena",
+
+      feat_label: "FITUR UTAMA",
+      feat_title: "Semua yang kamu butuhkan",
+      feat_sub:   "Dirancang untuk tetap tersembunyi sambil memberikan jawaban yang akurat dan cepat.",
+
+      f1_h: "AI Gemini 2.5 Flash",
+      f1_p: "Bukan sekadar OCR. ZOMET membaca konteks soal dan menjawab dengan penjelasan singkat yang mudah dipahami.",
+      f2_h: "Mode Tersembunyi",
+      f2_p: "Jendela transparan yang selalu di atas layar. Opacity bisa diatur dari terang sampai hampir tidak terlihat.",
+      f3_h: "Jawaban dalam Detik",
+      f3_p: "Klik kanan → pilih area soal → jawaban muncul. Prosesnya cepat, tidak perlu mengetik apapun.",
+      f4_h: "Serba Bisa",
+      f4_p: "Soal pilihan ganda, essay, rumus matematika, hingga error pada kode program — semua bisa ditangani.",
+      f5_h: "License Per Perangkat",
+      f5_p: "Satu license terikat ke satu perangkat. Aman dari penyebaran ilegal.",
+      f6_h: "Tinggal Pakai",
+      f6_p: "Tidak perlu install Python atau library apapun. Download file .exe, klik dua kali, langsung jalan.",
+
+      how_label: "CARA PAKAI",
+      how_title: "Semudah 3 langkah",
+      how_sub:   "Tidak ada konfigurasi rumit. Download, masukkan license, langsung pakai.",
+      s1_h: "Download & Jalankan",
+      s1_p: "Download ZOMET.exe, klik dua kali. Masukkan license key yang sudah dibeli.",
+      s2_h: "Screenshot Soal",
+      s2_p: "Klik kanan pada jendela ZOMET, lalu drag untuk memilih area soal di layar.",
+      s3_h: "Dapat Jawaban",
+      s3_p: "AI langsung menganalisa dan menampilkan jawaban beserta penjelasan singkat.",
+
+      price_label:   "HARGA",
+      price_title:   "Pilih paket sesuai kebutuhan",
+      price_sub:     "Coba gratis dulu dengan paket Demo. Tidak perlu kartu kredit.",
+      popular_badge: "TERPOPULER",
+      p0_amount: "Gratis",
+      p0_period: "sekali pakai",
+      p0_limit:  "5x penggunaan",
+      p1_period: "1 hari",
+      p1_limit:  "100x penggunaan",
+      p2_period: "7 hari",
+      p2_limit:  "700x penggunaan",
+      p3_period: "30 hari",
+      p3_limit:  "3.000x penggunaan",
+      p4_period: "1 tahun",
+      p4_limit:  "Unlimited",
+      price_contact: "Untuk pembelian license, hubungi kami via WhatsApp / DM Instagram.",
+
+      dl_title: "Siap mencoba?",
+      dl_sub:   "Download gratis, coba 5x tanpa perlu beli. License key demo tersedia gratis.",
+      dl_btn:   "⬇ Download ZOMET.exe",
+      dl_note:  "Windows 10/11 · 64-bit · ~80 MB",
+
+      footer_copy: "© 2025 ZOMET AI. Hak cipta dilindungi."
+    },
+
+    en: {
+      nav_features: "Features",
+      nav_how:      "How It Works",
+      nav_pricing:  "Pricing",
+      nav_download: "Download",
+      nav_cta:      "Free Download",
+
+      hero_badge:   "✦ POWERED BY GEMINI 2.5 FLASH",
+      hero_h1_span: "Answered Instantly.",
+      hero_p:       "ZOMET AI reads questions from screenshots and gives instant answers. Stays hidden on screen — no one will notice.",
+      hero_btn1:    "Free Download",
+      hero_btn2:    "See Features",
+      mockup_answer:"Answer: Option B is correct because",
+
+      feat_label: "KEY FEATURES",
+      feat_title: "Everything you need",
+      feat_sub:   "Built to stay invisible while delivering fast, accurate answers.",
+
+      f1_h: "Gemini 2.5 Flash AI",
+      f1_p: "Not just OCR. ZOMET reads the context of the question and answers with a clear, concise explanation.",
+      f2_h: "Stealth Mode",
+      f2_p: "A transparent window that stays on top of your screen. Opacity is fully adjustable — from visible to nearly invisible.",
+      f3_h: "Answer in Seconds",
+      f3_p: "Right-click → drag to select the question area → answer appears. Fast, no typing required.",
+      f4_h: "Handles Everything",
+      f4_p: "Multiple choice, essays, math formulas, and coding errors — ZOMET handles them all.",
+      f5_h: "Per-Device License",
+      f5_p: "One license is locked to one device. Safe from unauthorized sharing.",
+      f6_h: "Zero Setup",
+      f6_p: "No Python or libraries needed. Just download the .exe, double-click, and you're ready.",
+
+      how_label: "HOW IT WORKS",
+      how_title: "Just 3 simple steps",
+      how_sub:   "No complicated setup. Download, enter your license, start using.",
+      s1_h: "Download & Run",
+      s1_p: "Download ZOMET.exe and double-click it. Enter your license key to get started.",
+      s2_h: "Screenshot the Question",
+      s2_p: "Right-click the ZOMET window, then drag to select the question area on screen.",
+      s3_h: "Get the Answer",
+      s3_p: "AI instantly analyzes and displays the answer with a short explanation.",
+
+      price_label:   "PRICING",
+      price_title:   "Choose your plan",
+      price_sub:     "Try it free with the Demo plan. No credit card required.",
+      popular_badge: "MOST POPULAR",
+      p0_amount: "Free",
+      p0_period: "one-time",
+      p0_limit:  "5 uses",
+      p1_period: "1 day",
+      p1_limit:  "100 uses",
+      p2_period: "7 days",
+      p2_limit:  "700 uses",
+      p3_period: "30 days",
+      p3_limit:  "3,000 uses",
+      p4_period: "1 year",
+      p4_limit:  "Unlimited",
+      price_contact: "To purchase a license, contact us via WhatsApp or Instagram DM.",
+
+      dl_title: "Ready to try?",
+      dl_sub:   "Download for free and try 5 times — no purchase needed. Free demo keys available.",
+      dl_btn:   "⬇ Download ZOMET.exe",
+      dl_note:  "Windows 10/11 · 64-bit · ~80 MB",
+
+      footer_copy: "© 2025 ZOMET AI. All rights reserved."
+    }
+  };
+
+  function setLang(lang) {
+    const t = translations[lang];
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (t[key] !== undefined) el.innerHTML = t[key];
+    });
+    document.documentElement.lang = lang;
+    document.getElementById('btn-id').classList.toggle('active', lang === 'id');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    localStorage.setItem('zomet_lang', lang);
+  }
+
+  const saved = localStorage.getItem('zomet_lang') || 'id';
+  setLang(saved);
+</script>
 
 </body>
 </html>
