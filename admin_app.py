@@ -146,28 +146,59 @@ try:
             st.subheader("Hapus Lisensi")
 
             keys = [lic["license_key"] for lic in data]
-            selected_key = st.selectbox("Pilih License Key", keys)
+            tab_single, tab_bulk = st.tabs(["Hapus Satu", "Hapus Banyak"])
 
-            confirm = st.checkbox(f'Konfirmasi hapus "{selected_key}"')
+            with tab_single:
+                selected_key = st.selectbox("Pilih License Key", keys)
+                confirm_single = st.checkbox(f'Konfirmasi hapus "{selected_key}"')
 
-            if st.button("Hapus", type="primary", disabled=not confirm):
-                try:
-                    del_res = requests.delete(
-                        f"https://zomet-production.up.railway.app/delete-license/{selected_key}",
-                        headers={"x-api-key": st.secrets["API_KEY"]},
-                        timeout=15
-                    )
-                    if del_res.status_code == 200:
-                        st.success(f"Lisensi {selected_key} berhasil dihapus!")
-                        st.rerun()
-                    else:
-                        st.error(f"Gagal! Status {del_res.status_code}\n\n{del_res.text}")
+                if st.button("Hapus", type="primary", disabled=not confirm_single):
+                    try:
+                        del_res = requests.delete(
+                            f"https://zomet-production.up.railway.app/delete-license/{selected_key}",
+                            headers={"x-api-key": st.secrets["API_KEY"]},
+                            timeout=15
+                        )
+                        if del_res.status_code == 200:
+                            st.success(f"Lisensi {selected_key} berhasil dihapus!")
+                            st.rerun()
+                        else:
+                            st.error(f"Gagal! Status {del_res.status_code}\n\n{del_res.text}")
 
-                except requests.Timeout:
-                    st.error("Request timeout.")
+                    except requests.Timeout:
+                        st.error("Request timeout.")
 
-                except Exception as ex:
-                    st.error(f"Error: {str(ex)}")
+                    except Exception as ex:
+                        st.error(f"Error: {str(ex)}")
+
+            with tab_bulk:
+                selected_keys = st.multiselect("Pilih License Keys", keys)
+
+                if selected_keys:
+                    confirm_bulk = st.checkbox(f"Konfirmasi hapus {len(selected_keys)} lisensi")
+
+                    if st.button("Hapus Semua yang Dipilih", type="primary", disabled=not confirm_bulk):
+                        try:
+                            del_res = requests.post(
+                                "https://zomet-production.up.railway.app/bulk-delete-licenses",
+                                json={"license_keys": selected_keys},
+                                headers={"x-api-key": st.secrets["API_KEY"]},
+                                timeout=30
+                            )
+                            if del_res.status_code == 200:
+                                result = del_res.json()
+                                st.success(f"{result['count']} lisensi berhasil dihapus!")
+                                st.rerun()
+                            else:
+                                st.error(f"Gagal! Status {del_res.status_code}\n\n{del_res.text}")
+
+                        except requests.Timeout:
+                            st.error("Request timeout.")
+
+                        except Exception as ex:
+                            st.error(f"Error: {str(ex)}")
+                else:
+                    st.info("Pilih minimal satu license key.")
         else:
             st.info("Belum ada lisensi.")
     else:

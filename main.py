@@ -82,6 +82,9 @@ class BulkCreateRequest(BaseModel):
     plan: str
     quantity: int
 
+class BulkDeleteRequest(BaseModel):
+    license_keys: list[str]
+
 # =========================================================
 # ROOT
 # =========================================================
@@ -248,6 +251,26 @@ def delete_license(license_key: str, db=Depends(get_db)):
     db.delete(lic)
     db.commit()
     return {"message": "deleted"}
+
+# =========================================================
+# BULK DELETE LICENSE (ADMIN)
+# =========================================================
+
+@app.post("/bulk-delete-licenses", dependencies=[Depends(verify_token)])
+def bulk_delete_licenses(data: BulkDeleteRequest, db=Depends(get_db)):
+    deleted = []
+    not_found = []
+
+    for key in data.license_keys:
+        lic = db.query(License).filter(License.license_key == key).first()
+        if lic:
+            db.delete(lic)
+            deleted.append(key)
+        else:
+            not_found.append(key)
+
+    db.commit()
+    return {"deleted": deleted, "not_found": not_found, "count": len(deleted)}
 
 # =========================================================
 # CREATE LICENSE (ADMIN)
