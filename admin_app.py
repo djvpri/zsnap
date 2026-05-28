@@ -65,3 +65,38 @@ if st.button("Create License"):
 
     except Exception as e:
         st.error(f"Error: {str(e)}")
+
+# =========================================================
+# DAFTAR LISENSI
+# =========================================================
+
+st.divider()
+st.subheader("Daftar Lisensi")
+
+if st.button("Refresh"):
+    st.rerun()
+
+try:
+    res = requests.get(
+        "https://zomet-production.up.railway.app/list-licenses",
+        headers={"x-api-key": st.secrets["API_KEY"]},
+        timeout=15
+    )
+
+    if res.status_code == 200:
+        data = res.json()
+        if data:
+            st.dataframe(
+                data,
+                use_container_width=True
+            )
+        else:
+            st.info("Belum ada lisensi.")
+    else:
+        st.error(f"Gagal memuat daftar. Status {res.status_code}")
+
+except requests.Timeout:
+    st.error("Request timeout.")
+
+except Exception as e:
+    st.error(f"Error: {str(e)}")

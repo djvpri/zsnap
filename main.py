@@ -194,6 +194,26 @@ def increment(data: LicenseRequest, db=Depends(get_db)):
     return {"success": True, "usage_count": lic.usage_count}
 
 # =========================================================
+# LIST LICENSES (ADMIN)
+# =========================================================
+
+@app.get("/list-licenses", dependencies=[Depends(verify_token)])
+def list_licenses(db=Depends(get_db)):
+    licenses = db.query(License).all()
+    return [
+        {
+            "license_key": lic.license_key,
+            "plan": lic.plan,
+            "hwid": lic.hwid,
+            "expires_at": str(lic.expires_at) if lic.expires_at else "-",
+            "usage_count": lic.usage_count,
+            "usage_limit": lic.usage_limit,
+            "active": lic.active
+        }
+        for lic in licenses
+    ]
+
+# =========================================================
 # CREATE LICENSE (ADMIN)
 # =========================================================
 
