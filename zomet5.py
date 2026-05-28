@@ -179,33 +179,33 @@ class GeminiWorker(QThread):
                 if response.status_code == 403:
                     if "Usage limit reached" in detail:
                         msg = (
-                            "Batas penggunaan habis.\n\n"
-                            "Silakan hubungi admin untuk\n"
-                            "upgrade atau perpanjang lisensi."
+                            "Usage limit reached.\n\n"
+                            "Please contact admin to\n"
+                            "upgrade or renew your license."
                         )
                     elif "License inactive" in detail:
                         msg = (
-                            "Lisensi tidak aktif.\n\n"
-                            "Hubungi admin untuk\n"
-                            "mengaktifkan kembali."
+                            "License is inactive.\n\n"
+                            "Please contact admin to\n"
+                            "reactivate your license."
                         )
                     elif "License expired" in detail:
                         msg = (
-                            "Lisensi sudah kadaluarsa.\n\n"
-                            "Silakan hubungi admin untuk\n"
-                            "perpanjang lisensi."
+                            "License has expired.\n\n"
+                            "Please contact admin to\n"
+                            "renew your license."
                         )
                     else:
-                        msg = "Akses ditolak. Hubungi admin."
+                        msg = "Access denied. Please contact admin."
                 elif response.status_code == 401:
-                    msg = "Autentikasi gagal. Hubungi admin."
+                    msg = "Authentication failed. Please contact admin."
                 elif response.status_code >= 500:
                     msg = (
-                        "Server sedang bermasalah.\n\n"
-                        "Coba beberapa saat lagi."
+                        "Server is experiencing issues.\n\n"
+                        "Please try again in a moment."
                     )
                 else:
-                    msg = f"Terjadi kesalahan (kode {response.status_code})."
+                    msg = f"An error occurred (code {response.status_code})."
 
                 self.finished_signal.emit(msg)
                 return
@@ -224,7 +224,7 @@ class GeminiWorker(QThread):
             if not candidates:
 
                 self.finished_signal.emit(
-                    "AI tidak memberikan jawaban."
+                    "AI did not return an answer."
                 )
 
                 return
@@ -242,14 +242,14 @@ class GeminiWorker(QThread):
             if not parts:
 
                 self.finished_signal.emit(
-                    "Response kosong."
+                    "Empty response from AI."
                 )
 
                 return
 
             text = parts[0].get(
                 "text",
-                "Tidak ada jawaban."
+                "No answer provided."
             )
 
             self.finished_signal.emit(text)
@@ -257,16 +257,16 @@ class GeminiWorker(QThread):
         except requests.Timeout:
 
             self.finished_signal.emit(
-                "Koneksi timeout.\n\n"
-                "Periksa koneksi internet Anda\n"
-                "lalu coba lagi."
+                "Connection timed out.\n\n"
+                "Please check your internet\n"
+                "connection and try again."
             )
 
         except requests.ConnectionError:
 
             self.finished_signal.emit(
-                "Tidak dapat terhubung ke server.\n\n"
-                "Periksa koneksi internet Anda."
+                "Unable to connect to server.\n\n"
+                "Please check your internet connection."
             )
 
         except Exception:
@@ -274,8 +274,8 @@ class GeminiWorker(QThread):
             traceback.print_exc()
 
             self.finished_signal.emit(
-                "Terjadi kesalahan tidak terduga.\n\n"
-                "Coba lagi atau hubungi admin."
+                "An unexpected error occurred.\n\n"
+                "Please try again or contact admin."
             )
 
         finally:
@@ -475,7 +475,7 @@ class StealthWindow(QWidget):
             elif event.key() == Qt.Key.Key_Down:
 
                 self.current_opacity = max(
-                    0.10,
+                    0.01,
                     self.current_opacity - 0.05
                 )
 
@@ -511,7 +511,7 @@ class StealthWindow(QWidget):
         try:
 
             self.label.setText(
-                "Mengambil screenshot..."
+                "Capturing screenshot..."
             )
 
             with mss.mss() as sct:
@@ -571,7 +571,7 @@ class StealthWindow(QWidget):
             self.show()
 
             self.label.setText(
-                "Menganalisa..."
+                "Analyzing..."
             )
 
             self.worker = GeminiWorker(
@@ -590,7 +590,7 @@ class StealthWindow(QWidget):
             self.show()
 
             self.label.setText(
-                f"SCREENSHOT ERROR\n\n{str(e)}"
+                f"SCREENSHOT ERROR\n\n{str(e)}\n\nPlease try again."
             )
 
     # =====================================================
@@ -632,7 +632,7 @@ if __name__ == "__main__":
     license_key, ok = QInputDialog.getText(
         None,
         "Zomet License",
-        "Masukkan License Key:"
+        "Enter your License Key:"
     )
 
     if not ok or not license_key:
