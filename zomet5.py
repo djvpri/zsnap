@@ -131,11 +131,12 @@ class GeminiWorker(QThread):
 
     finished_signal = pyqtSignal(str)
 
-    def __init__(self, image_path, license_key):
+    def __init__(self, image_path, license_key, hwid):
         super().__init__()
 
-        self.image_path = image_path
+        self.image_path  = image_path
         self.license_key = license_key
+        self.hwid        = hwid
 
     def run(self):
 
@@ -156,8 +157,9 @@ class GeminiWorker(QThread):
             # =============================================
 
             payload = {
-                "image": image_base64,
-                "license_key": self.license_key
+                "image":       image_base64,
+                "license_key": self.license_key,
+                "hwid":        self.hwid
             }
 
             response = requests.post(
@@ -194,6 +196,12 @@ class GeminiWorker(QThread):
                             "License has expired.\n\n"
                             "Please contact admin to\n"
                             "renew your license."
+                        )
+                    elif "Device not authorized" in detail:
+                        msg = (
+                            "This device is no longer authorized.\n\n"
+                            "Your license has been activated\n"
+                            "on another device."
                         )
                     else:
                         msg = "Access denied. Please contact admin."
@@ -285,6 +293,62 @@ class GeminiWorker(QThread):
                 if os.path.exists(self.image_path):
                     os.remove(self.image_path)
 
+            except Exception:
+                pass
+
+
+# =========================================================
+# HEARTBEAT WORKER
+# =========================================================
+
+class HeartbeatWorker(QThread):
+
+    kicked_signal = pyqtSignal(str)
+
+    def __init__(self, license_key, hwid):
+        super().__init__()
+        self.license_key = license_key
+        self.hwid        = hwid
+        self._running    = True
+
+    def stop(self):
+        self._running = False
+
+    def run(self):
+        while self._running:
+            time.sleep(60)
+            if not self._running:
+                break
+            try:
+                res = requests.post(
+                    "https://zomet-production.up.railway.app/heartbeat",
+                    json={
+                        "license_key": self.license_key,
+                        "hwid":        self.hwid
+                    },
+                    timeout=10
+                )
+                if res.status_code == 200:
+                    result = res.json()
+                    if not result.get("valid"):
+                        reason = result.get("reason", "")
+                        if reason == "device transferred":
+                            self.kicked_signal.emit(
+                                "Your license has been activated\n"
+                                "on another device.\n\n"
+                                "This session will now close."
+                            )
+                        elif reason == "expired":
+                            self.kicked_signal.emit(
+                                "Your license has expired.\n\n"
+                                "This session will now close."
+                            )
+                        else:
+                            self.kicked_signal.emit(
+                                "Your license is no longer active.\n\n"
+                                "This session will now close."
+                            )
+                        break
             except Exception:
                 pass
 
@@ -576,7 +640,8 @@ class StealthWindow(QWidget):
 
             self.worker = GeminiWorker(
                 temp_path,
-                ACTIVE_LICENSE_KEY
+                ACTIVE_LICENSE_KEY,
+                ACTIVE_HWID
             )
 
             self.worker.finished_signal.connect(
@@ -618,6 +683,7 @@ class StealthWindow(QWidget):
 # =========================================================
 
 ACTIVE_LICENSE_KEY = ""
+ACTIVE_HWID        = ""
 
 if __name__ == "__main__":
 
@@ -671,6 +737,7 @@ if __name__ == "__main__":
             sys.exit()
 
         ACTIVE_LICENSE_KEY = license_key
+        ACTIVE_HWID        = hwid
 
     except Exception as e:
 
@@ -702,5 +769,22 @@ if __name__ == "__main__":
     window.raise_()
 
     window.activateWindow()
+
+    # =========================================
+    # HEARTBEAT
+    # =========================================
+
+    def on_kicked(message):
+        window.hide()
+        msg = QMessageBox()
+        msg.setWindowTitle("Zomet — Session Ended")
+        msg.setText(message)
+        msg.setIcon(QMessageBox.Icon.Warning)
+        msg.exec()
+        QApplication.quit()
+
+    heartbeat = HeartbeatWorker(ACTIVE_LICENSE_KEY, ACTIVE_HWID)
+    heartbeat.kicked_signal.connect(on_kicked)
+    heartbeat.start()
 
     sys.exit(app.exec())

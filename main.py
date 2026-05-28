@@ -106,6 +106,7 @@ async def process_image(request: Request, db=Depends(get_db)):
 
         image_base64 = data.get("image")
         license_key  = data.get("license_key")
+        hwid         = data.get("hwid")
 
         if not image_base64:
             raise HTTPException(status_code=400, detail="Image not found")
@@ -121,6 +122,8 @@ async def process_image(request: Request, db=Depends(get_db)):
             raise HTTPException(status_code=403, detail="License inactive")
         if lic.expires_at and datetime.now().date() > lic.expires_at:
             raise HTTPException(status_code=403, detail="License expired")
+        if lic.hwid and hwid and lic.hwid != hwid:
+            raise HTTPException(status_code=403, detail="Device not authorized")
         if lic.usage_count >= lic.usage_limit:
             raise HTTPException(status_code=403, detail="Usage limit reached")
 
@@ -196,14 +199,11 @@ def verify(data: LicenseRequest, db=Depends(get_db)):
     if not lic.active:
         return {"valid": False, "reason": "license inactive"}
 
-    if lic.hwid and lic.hwid != data.hwid:
-        return {"valid": False, "reason": "HWID mismatch"}
-
-    if not lic.hwid:
-        lic.hwid = data.hwid
-
     if lic.expires_at and datetime.now().date() > lic.expires_at:
         return {"valid": False, "reason": "expired"}
+
+    # Transfer device: update HWID to new device, kicking the old one
+    lic.hwid = data.hwid
 
     db.commit()
 
@@ -214,6 +214,27 @@ def verify(data: LicenseRequest, db=Depends(get_db)):
         "usage_count": lic.usage_count,
         "usage_limit": lic.usage_limit
     }
+
+# =========================================================
+# HEARTBEAT (cek apakah device masih aktif)
+# =========================================================
+
+@app.post("/heartbeat")
+def heartbeat(data: LicenseRequest, db=Depends(get_db)):
+    lic = db.query(License).filter(
+        License.license_key == data.license_key
+    ).first()
+
+    if not lic or not lic.active:
+        return {"valid": False, "reason": "license inactive"}
+
+    if lic.expires_at and datetime.now().date() > lic.expires_at:
+        return {"valid": False, "reason": "expired"}
+
+    if lic.hwid != data.hwid:
+        return {"valid": False, "reason": "device transferred"}
+
+    return {"valid": True}
 
 # =========================================================
 # INCREMENT USAGE
