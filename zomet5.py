@@ -6,17 +6,24 @@ import traceback
 import requests
 import time
 import uuid
+import ctypes
+import ctypes.wintypes
 
 
 from PyQt6.QtWidgets import (
     QApplication,
     QLabel,
     QVBoxLayout,
+    QHBoxLayout,
     QWidget,
     QRubberBand,
     QMainWindow,
     QInputDialog,
-    QMessageBox
+    QMessageBox,
+    QMenu,
+    QDialog,
+    QListWidget,
+    QPushButton
 )
 
 from PyQt6.QtCore import (
@@ -354,6 +361,100 @@ class HeartbeatWorker(QThread):
 
 
 # =========================================================
+# WINDOW PICKER DIALOG
+# =========================================================
+
+def _enum_windows():
+    results = []
+
+    def _cb(hwnd, _):
+        if ctypes.windll.user32.IsWindowVisible(hwnd):
+            length = ctypes.windll.user32.GetWindowTextLengthW(hwnd)
+            if length > 0:
+                buf = ctypes.create_unicode_buffer(length + 1)
+                ctypes.windll.user32.GetWindowTextW(hwnd, buf, length + 1)
+                title = buf.value.strip()
+                if title:
+                    rect = ctypes.wintypes.RECT()
+                    ctypes.windll.user32.GetWindowRect(hwnd, ctypes.byref(rect))
+                    w = rect.right - rect.left
+                    h = rect.bottom - rect.top
+                    if w > 50 and h > 50:
+                        results.append((title, rect.left, rect.top, w, h))
+        return True
+
+    EnumProc = ctypes.WINFUNCTYPE(ctypes.c_bool, ctypes.c_void_p, ctypes.c_int)
+    ctypes.windll.user32.EnumWindows(EnumProc(_cb), 0)
+    return results
+
+
+class WindowPickerDialog(QDialog):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Select Window")
+        self.setWindowFlags(
+            Qt.WindowType.Dialog |
+            Qt.WindowType.WindowStaysOnTopHint
+        )
+        self.selected_rect = None
+        self._windows = _enum_windows()
+        self._build_ui()
+
+    def _build_ui(self):
+        layout = QVBoxLayout()
+
+        lbl = QLabel("Double-click or select a window and press Capture:")
+        lbl.setStyleSheet("color: white; font-family: Consolas;")
+
+        self.list_widget = QListWidget()
+        self.list_widget.setStyleSheet(
+            "background:#1a1a1a; color:white;"
+            "font-family:Consolas; font-size:13px;"
+            "border:1px solid #00dcb4;"
+        )
+
+        for title, x, y, w, h in self._windows:
+            self.list_widget.addItem(f"{title}  [{w}x{h}]")
+
+        self.list_widget.itemDoubleClicked.connect(self._accept)
+
+        btn_ok     = QPushButton("Capture")
+        btn_cancel = QPushButton("Cancel")
+
+        for btn in (btn_ok, btn_cancel):
+            btn.setStyleSheet(
+                "QPushButton { background:#00dcb4; color:black;"
+                "font-family:Consolas; font-weight:bold;"
+                "padding:6px 18px; border-radius:4px; }"
+                "QPushButton:hover { background:#00b89c; }"
+            )
+
+        btn_ok.clicked.connect(self._accept)
+        btn_cancel.clicked.connect(self.reject)
+
+        btn_row = QHBoxLayout()
+        btn_row.addStretch()
+        btn_row.addWidget(btn_ok)
+        btn_row.addWidget(btn_cancel)
+
+        layout.addWidget(lbl)
+        layout.addWidget(self.list_widget)
+        layout.addLayout(btn_row)
+
+        self.setLayout(layout)
+        self.setStyleSheet("background:#111;")
+        self.resize(520, 400)
+
+    def _accept(self):
+        idx = self.list_widget.currentRow()
+        if idx >= 0:
+            _, x, y, w, h = self._windows[idx]
+            self.selected_rect = (x, y, w, h)
+            self.accept()
+
+
+# =========================================================
 # MAIN WINDOW
 # =========================================================
 
@@ -401,7 +502,10 @@ class StealthWindow(QWidget):
         self.label = QLabel(
             f"{APP_TITLE}\n\n"
             "LEFT CLICK + DRAG : Move Window\n"
-            "RIGHT CLICK       : Screenshot\n\n"
+            "RIGHT CLICK       : Screenshot Menu\n"
+            "  1. Region Selection\n"
+            "  2. Full Screen\n"
+            "  3. Select Window\n\n"
             "CTRL + UP         : Increase Opacity\n"
             "CTRL + DOWN       : Decrease Opacity\n"
             "CTRL + W          : Change Color\n"
@@ -460,20 +564,12 @@ class StealthWindow(QWidget):
                 event.globalPosition().toPoint()
             )
 
-        # SCREENSHOT
+        # SCREENSHOT MENU
         elif event.button() == Qt.MouseButton.RightButton:
 
-            self.hide()
-
-            QApplication.processEvents()
-
-            time.sleep(0.15)
-
-            self.snipper = SnippingWidget(
-                self.capture_area
+            self.show_screenshot_menu(
+                event.globalPosition().toPoint()
             )
-
-            self.snipper.show()
 
     # =====================================================
 
@@ -506,6 +602,97 @@ class StealthWindow(QWidget):
         if event.button() == Qt.MouseButton.LeftButton:
 
             self.old_pos = QPoint()
+
+    # =====================================================
+
+    def show_screenshot_menu(self, pos):
+
+        menu = QMenu(self)
+        menu.setStyleSheet("""
+            QMenu {
+                background-color: #1a1a1a;
+                color: white;
+                border: 1px solid #00dcb4;
+                font-family: Consolas;
+                font-size: 13px;
+                padding: 4px;
+            }
+            QMenu::item { padding: 7px 22px; }
+            QMenu::item:selected {
+                background-color: #00dcb4;
+                color: black;
+            }
+        """)
+
+        act_region     = menu.addAction("Region Selection")
+        act_fullscreen = menu.addAction("Full Screen")
+        act_window     = menu.addAction("Select Window")
+
+        action = menu.exec(pos)
+
+        if action == act_region:
+            self._start_region_capture()
+        elif action == act_fullscreen:
+            self._start_fullscreen_capture()
+        elif action == act_window:
+            self._start_window_capture()
+
+    # =====================================================
+
+    def _start_region_capture(self):
+
+        self.hide()
+        QApplication.processEvents()
+        time.sleep(0.15)
+
+        self.snipper = SnippingWidget(self.capture_area)
+        self.snipper.show()
+
+    # =====================================================
+
+    def _start_fullscreen_capture(self):
+
+        self.hide()
+        QApplication.processEvents()
+        time.sleep(0.15)
+
+        try:
+            self.label.setText("Capturing screenshot...")
+
+            with mss.mss() as sct:
+                monitor = sct.monitors[1]  # primary monitor
+                screenshot = sct.grab(monitor)
+                img = Image.frombytes(
+                    "RGB",
+                    screenshot.size,
+                    screenshot.bgra,
+                    "raw",
+                    "BGRX"
+                )
+
+            self.show()
+            self._send_image(img)
+
+        except Exception as e:
+            self.show()
+            self.label.setText(
+                f"SCREENSHOT ERROR\n\n{str(e)}\n\nPlease try again."
+            )
+
+    # =====================================================
+
+    def _start_window_capture(self):
+
+        dialog = WindowPickerDialog(self)
+
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            rect = dialog.selected_rect
+            if rect:
+                x, y, w, h = rect
+                self.hide()
+                QApplication.processEvents()
+                time.sleep(0.15)
+                self.capture_area(x, y, w, h)
 
     # =====================================================
 
@@ -597,21 +784,27 @@ class StealthWindow(QWidget):
                     "BGRX"
                 )
 
-            # =============================================
-            # UPSCALE OCR
-            # =============================================
+            self.show()
+            self._send_image(img)
 
-            img = img.resize(
-                (
-                    img.width * 2,
-                    img.height * 2
-                ),
-                Image.Resampling.LANCZOS
+        except Exception as e:
+
+            self.show()
+
+            self.label.setText(
+                f"SCREENSHOT ERROR\n\n{str(e)}\n\nPlease try again."
             )
 
-            # =============================================
-            # SAVE TEMP
-            # =============================================
+    # =====================================================
+
+    def _send_image(self, img):
+
+        try:
+
+            img = img.resize(
+                (img.width * 2, img.height * 2),
+                Image.Resampling.LANCZOS
+            )
 
             temp_file = tempfile.NamedTemporaryFile(
                 suffix=".jpg",
@@ -619,24 +812,11 @@ class StealthWindow(QWidget):
             )
 
             temp_path = temp_file.name
-
             temp_file.close()
 
-            img.save(
-                temp_path,
-                "JPEG",
-                quality=95
-            )
+            img.save(temp_path, "JPEG", quality=95)
 
-            # =============================================
-            # SEND
-            # =============================================
-
-            self.show()
-
-            self.label.setText(
-                "Analyzing..."
-            )
+            self.label.setText("Analyzing...")
 
             self.worker = GeminiWorker(
                 temp_path,
@@ -651,8 +831,6 @@ class StealthWindow(QWidget):
             self.worker.start()
 
         except Exception as e:
-
-            self.show()
 
             self.label.setText(
                 f"SCREENSHOT ERROR\n\n{str(e)}\n\nPlease try again."
