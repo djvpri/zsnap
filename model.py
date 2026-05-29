@@ -1,4 +1,5 @@
-from sqlalchemy import Column, String, Integer, Boolean, Date
+from sqlalchemy import Column, String, Integer, Boolean, Date, DateTime
+from sqlalchemy.sql import func
 from db import Base
 
 class License(Base):
@@ -15,3 +16,15 @@ class License(Base):
 
     active = Column(Boolean, default=True)
     notes  = Column(String, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+
+
+class UsageLog(Base):
+    __tablename__ = "usage_logs"
+
+    id          = Column(Integer, primary_key=True, autoincrement=True)
+    license_key = Column(String, index=True)
+    plan        = Column(String, nullable=True)
+    event       = Column(String)   # demo_claim | verify | process_image
+    notes       = Column(String, nullable=True)  # phone (demo), hwid (verify/process)
+    created_at  = Column(DateTime, server_default=func.now())

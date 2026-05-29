@@ -208,3 +208,83 @@ except requests.Timeout:
 
 except Exception as e:
     st.error(f"Error: {str(e)}")
+
+# =========================================================
+# VISITOR HISTORY
+# =========================================================
+
+st.divider()
+st.subheader("Visitor History")
+
+EVENT_LABELS = {
+    "all":           "Semua",
+    "demo_claim":    "Demo Claim",
+    "process_image": "App Usage",
+}
+
+col_filter, col_limit, col_refresh = st.columns([2, 2, 1])
+
+with col_filter:
+    event_filter = st.selectbox(
+        "Filter Event",
+        options=list(EVENT_LABELS.keys()),
+        format_func=lambda k: EVENT_LABELS[k],
+        key="visitor_event_filter"
+    )
+
+with col_limit:
+    log_limit = st.number_input("Tampilkan (maks)", min_value=10, max_value=1000, value=100, step=10, key="visitor_limit")
+
+with col_refresh:
+    st.write("")
+    refresh_logs = st.button("Refresh", key="visitor_refresh")
+
+try:
+    params = {"limit": int(log_limit)}
+    if event_filter != "all":
+        params["event"] = event_filter
+
+    log_res = requests.get(
+        "https://zomet-production.up.railway.app/visitor-logs",
+        headers={"x-api-key": st.secrets["API_KEY"]},
+        params=params,
+        timeout=15
+    )
+
+    if log_res.status_code == 200:
+        logs = log_res.json()
+
+        if logs:
+            # Ringkasan
+            total_demo  = sum(1 for l in logs if l["event"] == "demo_claim")
+            total_usage = sum(1 for l in logs if l["event"] == "process_image")
+
+            m1, m2, m3 = st.columns(3)
+            m1.metric("Total Entri", len(logs))
+            m2.metric("Demo Claim", total_demo)
+            m3.metric("App Usage", total_usage)
+
+            # Tampilkan tabel
+            import pandas as pd
+            df = pd.DataFrame(logs)
+            df = df.rename(columns={
+                "id":          "ID",
+                "time":        "Waktu",
+                "event":       "Event",
+                "license_key": "License Key",
+                "plan":        "Plan",
+                "notes":       "Info",
+            })
+            df = df.drop(columns=["ID"])
+
+            st.dataframe(df, use_container_width=True, height=400)
+        else:
+            st.info("Belum ada data visitor.")
+    else:
+        st.error(f"Gagal memuat logs. Status {log_res.status_code}")
+
+except requests.Timeout:
+    st.error("Request timeout.")
+
+except Exception as e:
+    st.error(f"Error: {str(e)}")

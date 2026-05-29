@@ -11,20 +11,22 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime
 from db import SessionLocal, engine
-from model import Base, License
+from model import Base, License, UsageLog
 from license_service import calculate_expiry
 
 Base.metadata.create_all(bind=engine)
 
 # Tambah kolom baru jika belum ada (untuk upgrade database lama)
 with engine.connect() as conn:
-    try:
-        conn.execute(__import__("sqlalchemy").text(
-            "ALTER TABLE licenses ADD COLUMN IF NOT EXISTS notes VARCHAR"
-        ))
-        conn.commit()
-    except Exception:
-        pass
+    for ddl in [
+        "ALTER TABLE licenses ADD COLUMN IF NOT EXISTS notes VARCHAR",
+        "ALTER TABLE licenses ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()",
+    ]:
+        try:
+            conn.execute(__import__("sqlalchemy").text(ddl))
+            conn.commit()
+        except Exception:
+            pass
 
 # =========================================================
 # CONFIG
@@ -178,6 +180,12 @@ def claim_demo(data: DemoClaimRequest, db=Depends(get_db)):
     )
 
     db.add(lic)
+    db.add(UsageLog(
+        license_key=key,
+        plan="demo",
+        event="demo_claim",
+        notes=phone
+    ))
     db.commit()
 
     send_demo_notification(phone, key)
@@ -262,6 +270,12 @@ async def process_image(request: Request, db=Depends(get_db)):
             lic = db.query(License).filter(License.license_key == license_key).first()
             if lic:
                 lic.usage_count += 1
+                db.add(UsageLog(
+                    license_key=license_key,
+                    plan=lic.plan,
+                    event="process_image",
+                    notes=hwid
+                ))
                 db.commit()
 
         return response.json()
@@ -447,3 +461,25 @@ def bulk_create_licenses(data: BulkCreateRequest, db=Depends(get_db)):
 
     db.commit()
     return {"created": created, "count": len(created)}
+
+# =========================================================
+# VISITOR LOGS (ADMIN)
+# =========================================================
+
+@app.get("/visitor-logs", dependencies=[Depends(verify_token)])
+def visitor_logs(limit: int = 200, event: str = None, db=Depends(get_db)):
+    q = db.query(UsageLog).order_by(UsageLog.id.desc())
+    if event:
+        q = q.filter(UsageLog.event == event)
+    logs = q.limit(limit).all()
+    return [
+        {
+            "id":          log.id,
+            "time":        str(log.created_at)[:19] if log.created_at else "-",
+            "event":       log.event,
+            "license_key": log.license_key,
+            "plan":        log.plan or "-",
+            "notes":       log.notes or "-",
+        }
+        for log in logs
+    ]
