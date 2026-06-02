@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Refund Policy — ZOMET AI</title>
+  <link rel="icon" type="image/x-icon" href="zomet.ico" />
+  <style>
+    :root {
+      --bg:     #090909;
+      --card:   #111111;
+      --border: #1e1e1e;
+      --accent: #00dcb4;
+      --text:   #f0f0f0;
+      --muted:  #666666;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      line-height: 1.7;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 48px;
+      background: rgba(9,9,9,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--accent);
+    }
+    .nav-back {
+      font-size: .88rem;
+      color: var(--muted);
+      transition: color .2s;
+    }
+    .nav-back:hover { color: var(--text); text-decoration: none; }
+
+    .lang-toggle {
+      display: flex;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .lang-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      padding: 5px 13px;
+      font-size: .8rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: background .2s, color .2s;
+    }
+    .lang-btn.active { background: var(--accent); color: #000; }
+
+    main {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 120px 24px 80px;
+    }
+    .page-label {
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+    .last-updated {
+      font-size: .82rem;
+      color: var(--muted);
+      margin-bottom: 48px;
+    }
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 36px 0 10px;
+    }
+    p { color: #c0c0c0; margin-bottom: 12px; }
+    ul {
+      color: #c0c0c0;
+      padding-left: 20px;
+      margin-bottom: 12px;
+    }
+    ul li { margin-bottom: 6px; }
+
+    .highlight-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 20px 0;
+      color: #c0c0c0;
+    }
+
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: .82rem;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">ZOMET AI</a>
+  <div style="display:flex;align-items:center;gap:20px;">
+    <a class="nav-back" href="index.html">← <span data-i18n="back">Back to Home</span></a>
+    <div class="lang-toggle">
+      <button class="lang-btn" id="btn-id" onclick="setLang('id')">ID</button>
+      <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="page-label" data-i18n="label">LEGAL</div>
+  <h1 data-i18n="title">Refund Policy</h1>
+  <p class="last-updated" data-i18n="updated">Last updated: June 2026</p>
+
+  <div class="highlight-box" data-i18n="summary">
+    ZOMET AI is a digital product. Once your license key has been delivered, we generally do not offer refunds. Please read the exceptions below carefully before purchasing.
+  </div>
+
+  <h2 data-i18n="s1_h">1. No Refund After Key Delivery</h2>
+  <p data-i18n="s1_p">Because ZOMET AI is a digital product and the license key is delivered immediately upon successful payment, we do not offer refunds once the license key has been issued and sent to your email. This is standard practice for digital software licenses.</p>
+
+  <h2 data-i18n="s2_h">2. Eligible Refund Conditions</h2>
+  <p data-i18n="s2_p">A refund may be considered in the following situations:</p>
+  <ul>
+    <li data-i18n="s2_l1"><strong>Duplicate payment</strong> — you were charged more than once for the same order</li>
+    <li data-i18n="s2_l2"><strong>License not delivered</strong> — your payment was confirmed but no license key was received within 24 hours</li>
+    <li data-i18n="s2_l3"><strong>Product not functioning</strong> — the application fails to work as described and the issue cannot be resolved by our support within 3 business days</li>
+  </ul>
+
+  <h2 data-i18n="s3_h">3. How to Request a Refund</h2>
+  <p data-i18n="s3_p">To request a refund, contact us via <a href="https://wa.me/6282153533164" target="_blank">WhatsApp</a> within <strong data-i18n="s3_days">3 days</strong> of your purchase date. Please include:</p>
+  <ul>
+    <li data-i18n="s3_l1">Your order ID or email address used at checkout</li>
+    <li data-i18n="s3_l2">Proof of payment (screenshot or transaction ID)</li>
+    <li data-i18n="s3_l3">Description of the issue (if applicable)</li>
+  </ul>
+
+  <h2 data-i18n="s4_h">4. Non-Refundable Cases</h2>
+  <p data-i18n="s4_p">Refunds will not be issued in the following cases:</p>
+  <ul>
+    <li data-i18n="s4_l1">Change of mind after the license key is delivered</li>
+    <li data-i18n="s4_l2">License key suspended due to a violation of our Terms & Conditions</li>
+    <li data-i18n="s4_l3">Failure to use the product within its validity period</li>
+    <li data-i18n="s4_l4">Issues caused by incompatible hardware or operating system not meeting the minimum requirements</li>
+  </ul>
+
+  <h2 data-i18n="s5_h">5. Refund Process</h2>
+  <p data-i18n="s5_p">Approved refunds will be processed within 3–7 business days to your original payment method. Refund timelines may vary depending on your bank or payment provider.</p>
+
+  <h2 data-i18n="s6_h">6. Contact</h2>
+  <p data-i18n="s6_p">For refund requests or questions, contact us via <a href="https://wa.me/6282153533164" target="_blank">WhatsApp</a>. We aim to respond within 1 business day.</p>
+
+  <div style="margin-top:48px;padding-top:24px;border-top:1px solid var(--border);display:flex;gap:24px;font-size:.85rem;">
+    <a href="terms.html" data-i18n="link_terms">Terms &amp; Conditions</a>
+    <a href="index.html" data-i18n="link_home">Home</a>
+  </div>
+</main>
+
+<footer>
+  @2026 by Muhammad Andi Juprianto, S.Pd., M.M.
+</footer>
+
+<script>
+  const t = {
+    id: {
+      back:    "Kembali ke Beranda",
+      label:   "LEGAL",
+      title:   "Kebijakan Pengembalian Dana",
+      updated: "Terakhir diperbarui: Juni 2026",
+      summary: "ZOMET AI adalah produk digital. Setelah license key Anda dikirimkan, secara umum kami tidak menawarkan pengembalian dana. Harap baca pengecualian di bawah ini dengan seksama sebelum melakukan pembelian.",
+      s1_h: "1. Tidak Ada Refund Setelah Key Dikirim",
+      s1_p: "Karena ZOMET AI adalah produk digital dan license key dikirimkan segera setelah pembayaran berhasil, kami tidak menawarkan pengembalian dana setelah license key diterbitkan dan dikirim ke email Anda. Ini adalah praktik standar untuk lisensi perangkat lunak digital.",
+      s2_h: "2. Kondisi yang Memenuhi Syarat Refund",
+      s2_p: "Pengembalian dana dapat dipertimbangkan dalam situasi berikut:",
+      s2_l1: "<strong>Pembayaran ganda</strong> — Anda dikenakan biaya lebih dari satu kali untuk pesanan yang sama",
+      s2_l2: "<strong>License tidak terkirim</strong> — pembayaran Anda dikonfirmasi tetapi tidak ada license key yang diterima dalam 24 jam",
+      s2_l3: "<strong>Produk tidak berfungsi</strong> — aplikasi gagal bekerja seperti yang dijelaskan dan masalah tidak dapat diselesaikan oleh dukungan kami dalam 3 hari kerja",
+      s3_h: "3. Cara Mengajukan Refund",
+      s3_p: 'Untuk mengajukan pengembalian dana, hubungi kami via <a href="https://wa.me/6282153533164" target="_blank">WhatsApp</a> dalam <strong data-i18n="s3_days">3 hari</strong> sejak tanggal pembelian Anda. Sertakan:',
+      s3_days: "3 hari",
+      s3_l1: "ID pesanan atau alamat email yang digunakan saat checkout",
+      s3_l2: "Bukti pembayaran (screenshot atau ID transaksi)",
+      s3_l3: "Deskripsi masalah (jika berlaku)",
+      s4_h: "4. Kasus yang Tidak Mendapat Refund",
+      s4_p: "Pengembalian dana tidak akan diberikan dalam kasus berikut:",
+      s4_l1: "Perubahan pikiran setelah license key dikirimkan",
+      s4_l2: "License key ditangguhkan karena pelanggaran Syarat & Ketentuan kami",
+      s4_l3: "Kegagalan menggunakan produk dalam periode berlakunya",
+      s4_l4: "Masalah yang disebabkan oleh perangkat keras atau sistem operasi yang tidak kompatibel atau tidak memenuhi persyaratan minimum",
+      s5_h: "5. Proses Refund",
+      s5_p: "Pengembalian dana yang disetujui akan diproses dalam 3–7 hari kerja ke metode pembayaran asal Anda. Jangka waktu pengembalian dana dapat bervariasi tergantung pada bank atau penyedia pembayaran Anda.",
+      s6_h: "6. Kontak",
+      s6_p: 'Untuk permintaan refund atau pertanyaan, hubungi kami via <a href="https://wa.me/6282153533164" target="_blank">WhatsApp</a>. Kami berupaya merespons dalam 1 hari kerja.',
+      link_terms: "Syarat & Ketentuan",
+      link_home:  "Beranda",
+    },
+    en: {
+      back:    "Back to Home",
+      label:   "LEGAL",
+      title:   "Refund Policy",
+      updated: "Last updated: June 2026",
+      summary: "ZOMET AI is a digital product. Once your license key has been delivered, we generally do not offer refunds. Please read the exceptions below carefully before purchasing.",
+      s1_h: "1. No Refund After Key Delivery",
+      s1_p: "Because ZOMET AI is a digital product and the license key is delivered immediately upon successful payment, we do not offer refunds once the license key has been issued and sent to your email. This is standard practice for digital software licenses.",
+      s2_h: "2. Eligible Refund Conditions",
+      s2_p: "A refund may be considered in the following situations:",
+      s2_l1: "<strong>Duplicate payment</strong> — you were charged more than once for the same order",
+      s2_l2: "<strong>License not delivered</strong> — your payment was confirmed but no license key was received within 24 hours",
+      s2_l3: "<strong>Product not functioning</strong> — the application fails to work as described and the issue cannot be resolved by our support within 3 business days",
+      s3_h: "3. How to Request a Refund",
+      s3_p: 'To request a refund, contact us via <a href="https://wa.me/6282153533164" target="_blank">WhatsApp</a> within <strong>3 days</strong> of your purchase date. Please include:',
+      s3_days: "3 days",
+      s3_l1: "Your order ID or email address used at checkout",
+      s3_l2: "Proof of payment (screenshot or transaction ID)",
+      s3_l3: "Description of the issue (if applicable)",
+      s4_h: "4. Non-Refundable Cases",
+      s4_p: "Refunds will not be issued in the following cases:",
+      s4_l1: "Change of mind after the license key is delivered",
+      s4_l2: "License key suspended due to a violation of our Terms & Conditions",
+      s4_l3: "Failure to use the product within its validity period",
+      s4_l4: "Issues caused by incompatible hardware or operating system not meeting the minimum requirements",
+      s5_h: "5. Refund Process",
+      s5_p: "Approved refunds will be processed within 3–7 business days to your original payment method. Refund timelines may vary depending on your bank or payment provider.",
+      s6_h: "6. Contact",
+      s6_p: 'For refund requests or questions, contact us via <a href="https://wa.me/6282153533164" target="_blank">WhatsApp</a>. We aim to respond within 1 business day.',
+      link_terms: "Terms & Conditions",
+      link_home:  "Home",
+    }
+  };
+
+  function setLang(lang) {
+    localStorage.setItem('zomet_lang', lang);
+    document.getElementById('btn-id').classList.toggle('active', lang === 'id');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (t[lang] && t[lang][key] !== undefined) el.innerHTML = t[lang][key];
+    });
+  }
+
+  const saved = localStorage.getItem('zomet_lang') || 'en';
+  setLang(saved);
+</script>
+</body>
+</html>

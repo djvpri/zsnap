@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms & Conditions — ZOMET AI</title>
+  <link rel="icon" type="image/x-icon" href="zomet.ico" />
+  <style>
+    :root {
+      --bg:     #090909;
+      --card:   #111111;
+      --border: #1e1e1e;
+      --accent: #00dcb4;
+      --text:   #f0f0f0;
+      --muted:  #666666;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      line-height: 1.7;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 48px;
+      background: rgba(9,9,9,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: var(--accent);
+    }
+    .nav-back {
+      font-size: .88rem;
+      color: var(--muted);
+      transition: color .2s;
+    }
+    .nav-back:hover { color: var(--text); text-decoration: none; }
+
+    .lang-toggle {
+      display: flex;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .lang-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      padding: 5px 13px;
+      font-size: .8rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: background .2s, color .2s;
+    }
+    .lang-btn.active { background: var(--accent); color: #000; }
+
+    main {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 120px 24px 80px;
+    }
+    .page-label {
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 900;
+      margin-bottom: 8px;
+    }
+    .last-updated {
+      font-size: .82rem;
+      color: var(--muted);
+      margin-bottom: 48px;
+    }
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin: 36px 0 10px;
+    }
+    p { color: #c0c0c0; margin-bottom: 12px; }
+    ul {
+      color: #c0c0c0;
+      padding-left: 20px;
+      margin-bottom: 12px;
+    }
+    ul li { margin-bottom: 6px; }
+
+    footer {
+      text-align: center;
+      padding: 32px 24px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: .82rem;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">ZOMET AI</a>
+  <div style="display:flex;align-items:center;gap:20px;">
+    <a class="nav-back" href="index.html">← <span data-i18n="back">Back to Home</span></a>
+    <div class="lang-toggle">
+      <button class="lang-btn" id="btn-id" onclick="setLang('id')">ID</button>
+      <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="page-label" data-i18n="label">LEGAL</div>
+  <h1 data-i18n="title">Terms &amp; Conditions</h1>
+  <p class="last-updated" data-i18n="updated">Last updated: June 2026</p>
+
+  <h2 data-i18n="s1_h">1. Acceptance of Terms</h2>
+  <p data-i18n="s1_p">By downloading, installing, or using ZOMET AI, you agree to be bound by these Terms & Conditions. If you do not agree, do not use the application.</p>
+
+  <h2 data-i18n="s2_h">2. License Grant</h2>
+  <p data-i18n="s2_p">When you purchase a license, you are granted a personal, non-transferable, non-exclusive right to use ZOMET AI on one device at a time. The license key is tied to your device (HWID). You may transfer the license to another device by logging in again on the new device, which will deactivate the previous device.</p>
+
+  <h2 data-i18n="s3_h">3. Prohibited Uses</h2>
+  <p data-i18n="s3_p">You may not:</p>
+  <ul>
+    <li data-i18n="s3_l1">Share, resell, or sublicense your license key to others</li>
+    <li data-i18n="s3_l2">Reverse-engineer, decompile, or crack the application</li>
+    <li data-i18n="s3_l3">Use the application for any illegal or unauthorized purpose</li>
+    <li data-i18n="s3_l4">Attempt to bypass or circumvent the license verification system</li>
+    <li data-i18n="s3_l5">Use the application in ways that violate academic integrity policies of your institution</li>
+  </ul>
+
+  <h2 data-i18n="s4_h">4. Intellectual Property</h2>
+  <p data-i18n="s4_p">ZOMET AI, including its source code, design, and content, is the intellectual property of Muhammad Andi Juprianto. All rights reserved. Unauthorized reproduction or distribution is prohibited.</p>
+
+  <h2 data-i18n="s5_h">5. Service Availability</h2>
+  <p data-i18n="s5_p">We strive to keep ZOMET AI operational at all times, but we do not guarantee uninterrupted service. Downtime may occur due to maintenance, server issues, or third-party service failures (e.g., Google Gemini API). Usage limits are based on successful AI responses, not on failed requests.</p>
+
+  <h2 data-i18n="s6_h">6. License Suspension</h2>
+  <p data-i18n="s6_p">We reserve the right to suspend or deactivate any license without prior notice if we detect a violation of these Terms, including but not limited to key sharing or abuse of the system.</p>
+
+  <h2 data-i18n="s7_h">7. Limitation of Liability</h2>
+  <p data-i18n="s7_p">ZOMET AI is provided "as is" without warranty of any kind. We are not liable for any damages arising from the use or inability to use the application, including but not limited to academic consequences resulting from its use.</p>
+
+  <h2 data-i18n="s8_h">8. Changes to Terms</h2>
+  <p data-i18n="s8_p">We may update these Terms at any time. Continued use of ZOMET AI after changes constitutes acceptance of the new Terms. We recommend checking this page periodically.</p>
+
+  <h2 data-i18n="s9_h">9. Contact</h2>
+  <p data-i18n="s9_p">For questions regarding these Terms, please contact us via <a href="https://wa.me/6282153533164" target="_blank">WhatsApp</a>.</p>
+
+  <div style="margin-top:48px;padding-top:24px;border-top:1px solid var(--border);display:flex;gap:24px;font-size:.85rem;">
+    <a href="refund.html" data-i18n="link_refund">Refund Policy</a>
+    <a href="index.html" data-i18n="link_home">Home</a>
+  </div>
+</main>
+
+<footer>
+  @2026 by Muhammad Andi Juprianto, S.Pd., M.M.
+</footer>
+
+<script>
+  const t = {
+    id: {
+      back:      "Kembali ke Beranda",
+      label:     "LEGAL",
+      title:     "Syarat & Ketentuan",
+      updated:   "Terakhir diperbarui: Juni 2026",
+      s1_h: "1. Penerimaan Syarat",
+      s1_p: "Dengan mengunduh, menginstal, atau menggunakan ZOMET AI, Anda menyetujui Syarat & Ketentuan ini. Jika Anda tidak setuju, jangan gunakan aplikasi ini.",
+      s2_h: "2. Pemberian Lisensi",
+      s2_p: "Saat Anda membeli lisensi, Anda mendapatkan hak penggunaan pribadi, tidak dapat dipindahtangankan, dan non-eksklusif untuk menggunakan ZOMET AI di satu perangkat dalam satu waktu. License key terikat pada perangkat Anda (HWID). Anda dapat memindahkan lisensi ke perangkat lain dengan login ulang di perangkat baru, yang akan menonaktifkan perangkat sebelumnya.",
+      s3_h: "3. Penggunaan yang Dilarang",
+      s3_p: "Anda tidak diperbolehkan:",
+      s3_l1: "Membagikan, menjual kembali, atau menyublisensikan license key Anda kepada orang lain",
+      s3_l2: "Melakukan rekayasa balik, mendekompilasi, atau meretas aplikasi",
+      s3_l3: "Menggunakan aplikasi untuk tujuan ilegal atau tidak sah",
+      s3_l4: "Mencoba melewati atau menghindari sistem verifikasi lisensi",
+      s3_l5: "Menggunakan aplikasi dengan cara yang melanggar kebijakan integritas akademik institusi Anda",
+      s4_h: "4. Kekayaan Intelektual",
+      s4_p: "ZOMET AI, termasuk kode sumber, desain, dan kontennya, adalah kekayaan intelektual Muhammad Andi Juprianto. Semua hak dilindungi. Reproduksi atau distribusi tanpa izin dilarang.",
+      s5_h: "5. Ketersediaan Layanan",
+      s5_p: "Kami berupaya menjaga ZOMET AI tetap beroperasi setiap saat, namun tidak menjamin layanan tanpa gangguan. Downtime dapat terjadi akibat pemeliharaan, masalah server, atau kegagalan layanan pihak ketiga (mis. Google Gemini API). Batas penggunaan dihitung berdasarkan respons AI yang berhasil, bukan permintaan yang gagal.",
+      s6_h: "6. Penangguhan Lisensi",
+      s6_p: "Kami berhak menangguhkan atau menonaktifkan lisensi tanpa pemberitahuan sebelumnya jika kami mendeteksi pelanggaran Syarat ini, termasuk namun tidak terbatas pada berbagi key atau penyalahgunaan sistem.",
+      s7_h: "7. Batasan Tanggung Jawab",
+      s7_p: "ZOMET AI disediakan 'apa adanya' tanpa jaminan apapun. Kami tidak bertanggung jawab atas kerusakan yang timbul dari penggunaan atau ketidakmampuan menggunakan aplikasi, termasuk namun tidak terbatas pada konsekuensi akademis akibat penggunaannya.",
+      s8_h: "8. Perubahan Syarat",
+      s8_p: "Kami dapat memperbarui Syarat ini kapan saja. Penggunaan ZOMET AI yang berkelanjutan setelah perubahan merupakan penerimaan Syarat baru. Kami menyarankan untuk memeriksa halaman ini secara berkala.",
+      s9_h: "9. Kontak",
+      s9_p: 'Untuk pertanyaan mengenai Syarat ini, hubungi kami via <a href="https://wa.me/6282153533164" target="_blank">WhatsApp</a>.',
+      link_refund: "Kebijakan Pengembalian Dana",
+      link_home:   "Beranda",
+    },
+    en: {
+      back:      "Back to Home",
+      label:     "LEGAL",
+      title:     "Terms & Conditions",
+      updated:   "Last updated: June 2026",
+      s1_h: "1. Acceptance of Terms",
+      s1_p: "By downloading, installing, or using ZOMET AI, you agree to be bound by these Terms & Conditions. If you do not agree, do not use the application.",
+      s2_h: "2. License Grant",
+      s2_p: "When you purchase a license, you are granted a personal, non-transferable, non-exclusive right to use ZOMET AI on one device at a time. The license key is tied to your device (HWID). You may transfer the license to another device by logging in again on the new device, which will deactivate the previous device.",
+      s3_h: "3. Prohibited Uses",
+      s3_p: "You may not:",
+      s3_l1: "Share, resell, or sublicense your license key to others",
+      s3_l2: "Reverse-engineer, decompile, or crack the application",
+      s3_l3: "Use the application for any illegal or unauthorized purpose",
+      s3_l4: "Attempt to bypass or circumvent the license verification system",
+      s3_l5: "Use the application in ways that violate academic integrity policies of your institution",
+      s4_h: "4. Intellectual Property",
+      s4_p: "ZOMET AI, including its source code, design, and content, is the intellectual property of Muhammad Andi Juprianto. All rights reserved. Unauthorized reproduction or distribution is prohibited.",
+      s5_h: "5. Service Availability",
+      s5_p: "We strive to keep ZOMET AI operational at all times, but we do not guarantee uninterrupted service. Downtime may occur due to maintenance, server issues, or third-party service failures (e.g., Google Gemini API). Usage limits are based on successful AI responses, not on failed requests.",
+      s6_h: "6. License Suspension",
+      s6_p: "We reserve the right to suspend or deactivate any license without prior notice if we detect a violation of these Terms, including but not limited to key sharing or abuse of the system.",
+      s7_h: "7. Limitation of Liability",
+      s7_p: "ZOMET AI is provided \"as is\" without warranty of any kind. We are not liable for any damages arising from the use or inability to use the application, including but not limited to academic consequences resulting from its use.",
+      s8_h: "8. Changes to Terms",
+      s8_p: "We may update these Terms at any time. Continued use of ZOMET AI after changes constitutes acceptance of the new Terms. We recommend checking this page periodically.",
+      s9_h: "9. Contact",
+      s9_p: 'For questions regarding these Terms, please contact us via <a href="https://wa.me/6282153533164" target="_blank">WhatsApp</a>.',
+      link_refund: "Refund Policy",
+      link_home:   "Home",
+    }
+  };
+
+  function setLang(lang) {
+    localStorage.setItem('zomet_lang', lang);
+    document.getElementById('btn-id').classList.toggle('active', lang === 'id');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (t[lang] && t[lang][key] !== undefined) el.innerHTML = t[lang][key];
+    });
+  }
+
+  const saved = localStorage.getItem('zomet_lang') || 'en';
+  setLang(saved);
+</script>
+</body>
+</html>
