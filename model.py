@@ -28,3 +28,15 @@ class UsageLog(Base):
     event       = Column(String)   # demo_claim | verify | process_image
     notes       = Column(String, nullable=True)  # phone (demo), hwid (verify/process)
     created_at  = Column(DateTime, server_default=func.now())
+
+
+class Transaction(Base):
+    __tablename__ = "transactions"
+
+    order_id    = Column(String, primary_key=True)
+    email       = Column(String)
+    plan        = Column(String)
+    amount      = Column(Integer)           # IDR
+    status      = Column(String, default="pending")  # pending | paid | failed
+    license_key = Column(String, nullable=True)
+    created_at  = Column(DateTime, server_default=func.now())

@@ -596,6 +596,7 @@
         <div class="price-amount" data-i18n="p1_amount">Rp 80K</div>
         <div class="price-period" data-i18n="p1_period">1 hari</div>
         <div class="price-limit"  data-i18n="p1_limit">100x penggunaan</div>
+        <button class="btn btn-outline" onclick="openPayModal('daily')" style="width:100%;margin-top:16px;padding:9px;" data-i18n="p_buy_btn">Beli Sekarang</button>
       </div>
       <div class="price-card popular">
         <div class="popular-badge" data-i18n="popular_badge">TERPOPULER</div>
@@ -603,18 +604,21 @@
         <div class="price-amount" data-i18n="p2_amount">Rp 130K</div>
         <div class="price-period" data-i18n="p2_period">7 hari</div>
         <div class="price-limit"  data-i18n="p2_limit">700x penggunaan</div>
+        <button class="btn btn-primary" onclick="openPayModal('weekly')" style="width:100%;margin-top:16px;padding:9px;" data-i18n="p_buy_btn">Beli Sekarang</button>
       </div>
       <div class="price-card">
         <div class="price-plan">MONTHLY</div>
         <div class="price-amount" data-i18n="p3_amount">Rp 210K</div>
         <div class="price-period" data-i18n="p3_period">30 hari</div>
         <div class="price-limit"  data-i18n="p3_limit">3.000x penggunaan</div>
+        <button class="btn btn-outline" onclick="openPayModal('monthly')" style="width:100%;margin-top:16px;padding:9px;" data-i18n="p_buy_btn">Beli Sekarang</button>
       </div>
       <div class="price-card">
         <div class="price-plan">YEARLY</div>
         <div class="price-amount" data-i18n="p4_amount">Rp 650K</div>
         <div class="price-period" data-i18n="p4_period">1 tahun</div>
         <div class="price-limit"  data-i18n="p4_limit">Unlimited</div>
+        <button class="btn btn-outline" onclick="openPayModal('yearly')" style="width:100%;margin-top:16px;padding:9px;" data-i18n="p_buy_btn">Beli Sekarang</button>
       </div>
     </div>
     <p style="text-align:center;color:var(--muted);margin-top:32px;font-size:.88rem;" data-i18n="price_contact">
@@ -668,6 +672,35 @@
       <div class="result-key" id="resultKey"></div>
       <button class="copy-btn" onclick="copyKey()" id="copyBtn" data-i18n="modal_copy">Salin</button>
     </div>
+  </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closePayModal()">×</button>
+    <h3 data-i18n="pay_modal_title">Beli License</h3>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin:12px 0 4px;">
+      <span id="payPlanLabel" style="color:var(--accent);font-weight:700;letter-spacing:2px;font-size:.85rem;"></span>
+      <span id="payPriceLabel" style="font-size:1.4rem;font-weight:900;"></span>
+    </div>
+    <p id="payPeriodLabel" style="color:var(--muted);font-size:.82rem;margin:0 0 16px;"></p>
+    <label style="color:var(--muted);font-size:.85rem;" data-i18n="pay_email_label">Email (license dikirim ke sini)</label>
+    <input type="email" id="payEmail" placeholder="your@email.com" style="margin-top:6px;" />
+    <button class="btn btn-primary" style="width:100%;margin-top:12px;" onclick="startPayment()" id="payBtn" data-i18n="pay_btn">Bayar Sekarang</button>
+    <div class="modal-error" id="payError"></div>
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div class="modal-overlay" id="successModal">
+  <div class="modal">
+    <h3 style="color:var(--accent);" data-i18n="pay_success_title">✓ Pembayaran Berhasil!</h3>
+    <p data-i18n="pay_success_sub">License key kamu:</p>
+    <div class="result-key" id="successKey" style="word-break:break-all;letter-spacing:3px;"></div>
+    <button class="copy-btn" onclick="copySuccessKey()" id="successCopyBtn" data-i18n="pay_copy_btn">Salin</button>
+    <p style="color:var(--muted);font-size:.85rem;margin-top:12px;" data-i18n="pay_success_email">Sudah dikirim ke email kamu juga.</p>
+    <button class="btn btn-outline" style="width:100%;margin-top:12px;" onclick="closeSuccessModal()" data-i18n="pay_close_btn">Tutup</button>
   </div>
 </div>
 
@@ -757,7 +790,15 @@
       modal_btn:   "Dapatkan License Demo",
       modal_result_label: "LICENSE KEY ANDA",
       modal_copy:  "Salin",
-      p0_btn:      "Coba Gratis"
+      p0_btn:      "Coba Gratis",
+      p_buy_btn:   "Beli Sekarang",
+      pay_modal_title:   "Beli License",
+      pay_email_label:   "Email (license dikirim ke sini)",
+      pay_btn:           "Bayar Sekarang",
+      pay_success_title: "✓ Pembayaran Berhasil!",
+      pay_success_sub:   "License key kamu:",
+      pay_success_email: "Sudah dikirim ke email kamu juga.",
+      pay_close_btn:     "Tutup"
     },
 
     en: {
@@ -835,7 +876,15 @@
       modal_btn:   "Get Demo License",
       modal_result_label: "YOUR LICENSE KEY",
       modal_copy:  "Copy",
-      p0_btn:      "Try Free"
+      p0_btn:      "Try Free",
+      p_buy_btn:   "Buy Now",
+      pay_modal_title:   "Purchase License",
+      pay_email_label:   "Email (license will be sent here)",
+      pay_btn:           "Pay Now",
+      pay_success_title: "✓ Payment Successful!",
+      pay_success_sub:   "Your license key:",
+      pay_success_email: "Also sent to your email.",
+      pay_close_btn:     "Close"
     }
   };
 
@@ -957,6 +1006,136 @@
     setTimeout(() => {
       btn.textContent = saved === 'id' ? 'Salin' : 'Copy';
     }, 2000);
+  }
+
+  // ── PAYMENT ──────────────────────────────────────────
+
+  const API = 'https://zomet-production.up.railway.app';
+  const PLAN_PRICES = {
+    daily:   { id: 'Rp 80K',  en: '$5',  period_id: '1 hari',  period_en: '1 day'  },
+    weekly:  { id: 'Rp 130K', en: '$8',  period_id: '7 hari',  period_en: '7 days' },
+    monthly: { id: 'Rp 210K', en: '$13', period_id: '30 hari', period_en: '30 days'},
+    yearly:  { id: 'Rp 650K', en: '$40', period_id: '1 tahun', period_en: '1 year' },
+  };
+
+  let _selectedPlan = '';
+  let _snapLoaded   = false;
+
+  async function _loadSnap() {
+    if (_snapLoaded) return;
+    const cfg = await fetch(`${API}/payment-config`).then(r => r.json()).catch(() => ({}));
+    if (!cfg.client_key) return;
+    const base = cfg.is_production
+      ? 'https://app.midtrans.com'
+      : 'https://app.sandbox.midtrans.com';
+    await new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = `${base}/snap/snap.js`;
+      s.setAttribute('data-client-key', cfg.client_key);
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+    _snapLoaded = true;
+  }
+
+  function openPayModal(plan) {
+    _selectedPlan = plan;
+    const lang = localStorage.getItem('zomet_lang') || 'en';
+    const info = PLAN_PRICES[plan];
+    document.getElementById('payPlanLabel').textContent   = plan.toUpperCase();
+    document.getElementById('payPriceLabel').textContent  = info[lang] || info.en;
+    document.getElementById('payPeriodLabel').textContent = lang === 'id' ? info.period_id : info.period_en;
+    document.getElementById('payEmail').value  = '';
+    document.getElementById('payError').textContent = '';
+    document.getElementById('payError').style.display = 'none';
+    document.getElementById('payModal').style.display = 'flex';
+    _loadSnap();
+  }
+
+  function closePayModal() {
+    document.getElementById('payModal').style.display = 'none';
+  }
+
+  async function startPayment() {
+    const email = document.getElementById('payEmail').value.trim();
+    const errEl = document.getElementById('payError');
+    if (!email || !email.includes('@')) {
+      errEl.textContent = 'Please enter a valid email.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    const btn = document.getElementById('payBtn');
+    btn.disabled = true;
+    btn.textContent = '...';
+    errEl.style.display = 'none';
+
+    try {
+      const res  = await fetch(`${API}/create-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: _selectedPlan, email })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Failed to create payment');
+
+      closePayModal();
+
+      window.snap.pay(data.snap_token, {
+        onSuccess: async () => { await _pollLicense(data.order_id); },
+        onPending: () => {
+          alert(localStorage.getItem('zomet_lang') === 'id'
+            ? 'Pembayaran pending. License akan dikirim ke email setelah konfirmasi.'
+            : 'Payment pending. License will be sent to your email after confirmation.');
+        },
+        onError:   () => { alert('Payment failed. Please try again.'); },
+        onClose:   () => {}
+      });
+    } catch (e) {
+      errEl.textContent = e.message;
+      errEl.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      const lang = localStorage.getItem('zomet_lang') || 'en';
+      btn.textContent = translations[lang]?.pay_btn || 'Pay Now';
+    }
+  }
+
+  async function _pollLicense(orderId, attempts = 0) {
+    if (attempts > 15) return;
+    try {
+      const res  = await fetch(`${API}/payment-status/${orderId}`);
+      const data = await res.json();
+      if (data.status === 'paid' && data.license_key) {
+        document.getElementById('successKey').textContent = data.license_key;
+        document.getElementById('successModal').style.display = 'flex';
+        return;
+      }
+    } catch (_) {}
+    setTimeout(() => _pollLicense(orderId, attempts + 1), 2000);
+  }
+
+  function closeSuccessModal() {
+    document.getElementById('successModal').style.display = 'none';
+  }
+
+  function copySuccessKey() {
+    const key = document.getElementById('successKey').textContent.trim();
+    const btn = document.getElementById('successCopyBtn');
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(key).then(() => showCopied(btn)).catch(() => _fallbackCopyPay(key, btn));
+    } else {
+      _fallbackCopyPay(key, btn);
+    }
+  }
+
+  function _fallbackCopyPay(text, btn) {
+    const el = document.createElement('textarea');
+    el.value = text; el.style.position = 'fixed'; el.style.opacity = '0';
+    document.body.appendChild(el); el.select();
+    document.execCommand('copy'); document.body.removeChild(el);
+    showCopied(btn);
   }
 </script>
 
