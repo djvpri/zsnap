@@ -976,6 +976,17 @@ if __name__ == "__main__":
 
     window.activateWindow()
 
+    # Hide from screen capture (Zoom, Meet, OBS, etc.)
+    # WDA_EXCLUDEFROMCAPTURE = 0x11 (Windows 10 build 19041+)
+    try:
+        WDA_EXCLUDEFROMCAPTURE = 0x00000011
+        ctypes.windll.user32.SetWindowDisplayAffinity(
+            int(window.winId()),
+            WDA_EXCLUDEFROMCAPTURE
+        )
+    except Exception:
+        pass
+
     # =========================================
     # HEARTBEAT
     # =========================================
