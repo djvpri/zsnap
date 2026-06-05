@@ -1044,22 +1044,31 @@
   let _selectedPlan = '';
   let _snapLoaded   = false;
 
+  let _snapPromise = null;
+
   async function _loadSnap() {
-    if (_snapLoaded) return;
-    const cfg = await fetch(`${API}/payment-config`).then(r => r.json()).catch(() => ({}));
-    if (!cfg.client_key) return;
-    const base = cfg.is_production
-      ? 'https://app.midtrans.com'
-      : 'https://app.sandbox.midtrans.com';
-    await new Promise((resolve, reject) => {
-      const s = document.createElement('script');
-      s.src = `${base}/snap/snap.js`;
-      s.setAttribute('data-client-key', cfg.client_key);
-      s.onload = resolve;
-      s.onerror = reject;
-      document.head.appendChild(s);
-    });
-    _snapLoaded = true;
+    if (_snapLoaded) return true;
+    if (_snapPromise) return _snapPromise;
+
+    _snapPromise = (async () => {
+      const cfg = await fetch(`${API}/payment-config`).then(r => r.json()).catch(() => ({}));
+      if (!cfg.client_key) return false;
+      const base = cfg.is_production
+        ? 'https://app.midtrans.com'
+        : 'https://app.sandbox.midtrans.com';
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = `${base}/snap/snap.js`;
+        s.setAttribute('data-client-key', cfg.client_key);
+        s.onload = resolve;
+        s.onerror = reject;
+        document.head.appendChild(s);
+      });
+      _snapLoaded = true;
+      return true;
+    })();
+
+    return _snapPromise;
   }
 
   function openPayModal(plan) {
@@ -1095,6 +1104,11 @@
     errEl.style.display = 'none';
 
     try {
+      const snapReady = await _loadSnap();
+      if (!snapReady || !window.snap) {
+        throw new Error('Payment system is not available. Please try again later.');
+      }
+
       const res  = await fetch(`${API}/create-payment`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
