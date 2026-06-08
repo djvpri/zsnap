@@ -581,10 +581,7 @@ async def create_payment(data: PaymentRequest, db=Depends(get_db)):
 
     if res.status_code != 201:
         print("MIDTRANS ERROR:", res.status_code, res.text)
-        raise HTTPException(
-            status_code=502,
-            detail=f"Failed to create payment transaction: {res.text}"
-        )
+        raise HTTPException(status_code=502, detail="Failed to create payment transaction")
 
     snap_token = res.json().get("token")
 
