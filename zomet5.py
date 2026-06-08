@@ -50,6 +50,37 @@ WINDOW_OPACITY = 0.35
 
 MIN_CAPTURE_SIZE = 10
 
+WDA_EXCLUDEFROMCAPTURE = 0x00000011
+
+# =========================================================
+# STEALTH HELPER (hide window from screen capture)
+# =========================================================
+
+def apply_stealth(widget):
+    """Exclude a top-level window from screen capture (Zoom, Meet, OBS, etc).
+
+    Requires Windows 10 build 19041+ (May 2020 Update). On older builds,
+    SetWindowDisplayAffinity returns 0 and the window stays visible in capture.
+    """
+    try:
+        hwnd = int(widget.winId())
+
+        ok = ctypes.windll.user32.SetWindowDisplayAffinity(
+            hwnd,
+            WDA_EXCLUDEFROMCAPTURE
+        )
+
+        if not ok:
+            print(f"[stealth] SetWindowDisplayAffinity failed for hwnd={hwnd} "
+                  f"(error={ctypes.get_last_error()}) — Windows build "
+                  f"{sys.getwindowsversion().build} may not support exclusion.")
+
+        return bool(ok)
+
+    except Exception as e:
+        print(f"[stealth] apply_stealth error: {e}")
+        return False
+
 # =========================================================
 # SNIPPING TOOL
 # =========================================================
@@ -77,6 +108,8 @@ class SnippingWidget(QMainWindow):
         )
 
         self.showFullScreen()
+
+        apply_stealth(self)
 
         self.origin = QPoint()
 
@@ -401,6 +434,10 @@ class WindowPickerDialog(QDialog):
         self._windows = _enum_windows()
         self._build_ui()
 
+    def showEvent(self, event):
+        super().showEvent(event)
+        apply_stealth(self)
+
     def _build_ui(self):
         layout = QVBoxLayout()
 
@@ -555,6 +592,12 @@ class StealthWindow(QWidget):
 
             padding: 14px;
         """)
+
+    # =====================================================
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        apply_stealth(self)
 
     # =====================================================
 
@@ -975,17 +1018,6 @@ if __name__ == "__main__":
     window.raise_()
 
     window.activateWindow()
-
-    # Hide from screen capture (Zoom, Meet, OBS, etc.)
-    # WDA_EXCLUDEFROMCAPTURE = 0x11 (Windows 10 build 19041+)
-    try:
-        WDA_EXCLUDEFROMCAPTURE = 0x00000011
-        ctypes.windll.user32.SetWindowDisplayAffinity(
-            int(window.winId()),
-            WDA_EXCLUDEFROMCAPTURE
-        )
-    except Exception:
-        pass
 
     # =========================================
     # HEARTBEAT

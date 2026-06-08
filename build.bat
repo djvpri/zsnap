@@ -8,10 +8,6 @@ echo.
 echo Memastikan dependensi terinstall...
 py -m pip install pyinstaller pyqt6 requests mss pillow --quiet
 
-:: Generate icon
-echo Membuat icon...
-py create_icon.py
-
 :: Bersihkan folder build lama
 if exist "dist\ZOMET.exe" (
     echo Menghapus build lama...
