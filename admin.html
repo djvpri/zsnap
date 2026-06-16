@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZOMET Admin — Projects</title>
+  <style>
+    :root {
+      --bg:      #090909;
+      --card:    #111111;
+      --card2:   #161616;
+      --border:  #1e1e1e;
+      --accent:  #00dcb4;
+      --accent2: #00aaff;
+      --text:    #f0f0f0;
+      --muted:   #666666;
+      --danger:  #ff5555;
+      --warn:    #ffc800;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    a { color: inherit; text-decoration: none; }
+
+    /* ── HEADER ── */
+    header {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(9,9,9,.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .header-logo { font-size: 1.1rem; font-weight: 800; letter-spacing: 2px; color: var(--accent); }
+    .header-logo span { color: var(--text); opacity: .5; font-weight: 400; font-size: .85rem; margin-left: 10px; letter-spacing: 0; }
+    .header-actions { display: flex; gap: 10px; align-items: center; }
+
+    /* ── LAYOUT ── */
+    .page { max-width: 860px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+    .card-title {
+      font-size: .75rem; font-weight: 700; letter-spacing: 2px;
+      color: var(--accent); margin-bottom: 16px;
+    }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 10px 20px; border-radius: 8px;
+      font-weight: 700; font-size: .88rem;
+      cursor: pointer; transition: opacity .2s, transform .15s;
+      border: none;
+    }
+    .btn:hover { opacity: .85; transform: translateY(-1px); }
+    .btn:disabled { opacity: .35; cursor: not-allowed; transform: none; }
+    .btn-primary  { background: var(--accent);  color: #000; }
+    .btn-outline  { background: transparent; border: 1.5px solid var(--accent); color: var(--accent); }
+    .btn-danger   { background: transparent; border: 1.5px solid var(--danger); color: var(--danger); }
+    .btn-ghost    { background: rgba(255,255,255,.06); color: var(--muted); }
+    .btn-sm       { padding: 6px 12px; font-size: .78rem; }
+    .btn-icon     { padding: 6px 10px; font-size: 1rem; }
+
+    /* ── FORM ── */
+    .form-group { margin-bottom: 16px; }
+    .form-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    label { display: block; font-size: .8rem; color: var(--muted); margin-bottom: 6px; font-weight: 600; letter-spacing: .5px; }
+    input, select, textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: .92rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .2s;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 80px; }
+    select option { background: #1a1a1a; }
+    .input-hint { font-size: .75rem; color: var(--muted); margin-top: 5px; }
+
+    /* ── TOKEN SECTION ── */
+    #token-section { }
+    .token-row { display: flex; gap: 10px; }
+    .token-row input { flex: 1; font-family: 'Consolas', monospace; letter-spacing: .5px; }
+    .token-status {
+      font-size: .82rem; font-weight: 600; margin-top: 10px;
+      display: none; padding: 8px 14px; border-radius: 8px;
+    }
+    .token-status.ok    { background: rgba(0,220,180,.08); color: var(--accent); border: 1px solid rgba(0,220,180,.2); }
+    .token-status.error { background: rgba(255,85,85,.08);  color: var(--danger); border: 1px solid rgba(255,85,85,.2); }
+
+    /* ── PROJECT LIST ── */
+    #project-list { display: flex; flex-direction: column; gap: 12px; }
+    .proj-item {
+      background: var(--card2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex; align-items: center; gap: 16px;
+      transition: border-color .2s;
+    }
+    .proj-item:hover { border-color: #2e2e2e; }
+    .proj-icon-sm {
+      width: 44px; height: 44px; border-radius: 10px;
+      background: rgba(0,220,180,.07); border: 1px solid rgba(0,220,180,.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; flex-shrink: 0;
+    }
+    .proj-icon-sm img { width: 26px; height: 26px; border-radius: 5px; object-fit: cover; }
+    .proj-info { flex: 1; min-width: 0; }
+    .proj-info-name {
+      font-weight: 700; font-size: .95rem;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .proj-badge {
+      font-size: .65rem; font-weight: 700; letter-spacing: 1px;
+      padding: 2px 8px; border-radius: 999px;
+    }
+    .badge-active  { background: rgba(0,220,180,.12); color: var(--accent); }
+    .badge-beta    { background: rgba(255,200,0,.12);  color: var(--warn); }
+    .badge-coming  { background: rgba(255,255,255,.06); color: var(--muted); }
+    .proj-info-meta { font-size: .78rem; color: var(--muted); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .proj-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .order-btns { display: flex; flex-direction: column; gap: 3px; flex-shrink: 0; }
+    .order-btn {
+      width: 26px; height: 22px; border-radius: 5px;
+      background: rgba(255,255,255,.05); border: 1px solid var(--border);
+      color: var(--muted); font-size: .75rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s, color .15s;
+    }
+    .order-btn:hover { background: rgba(255,255,255,.1); color: var(--text); }
+    .order-btn:disabled { opacity: .2; cursor: default; }
+    .proj-empty { text-align: center; color: var(--muted); padding: 48px 0; font-size: .9rem; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.8); z-index: 200;
+      align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #141414;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px 32px;
+      width: 100%; max-width: 560px;
+      max-height: 90vh; overflow-y: auto;
+      position: relative;
+    }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .modal-title { font-size: 1.2rem; font-weight: 800; }
+    .modal-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 0 4px;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+    /* ── STATUS BAR ── */
+    #status-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: rgba(9,9,9,.95); border-top: 1px solid var(--border);
+      padding: 12px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: .82rem; z-index: 100;
+    }
+    #status-msg { color: var(--muted); }
+    #status-msg.ok    { color: var(--accent); }
+    #status-msg.error { color: var(--danger); }
+    #status-msg.saving { color: var(--warn); }
+
+    /* ── EMOJI PICKER HINT ── */
+    .emoji-preview { font-size: 2rem; text-align: center; margin-top: 6px; }
+
+    /* ── CONFIRM DIALOG ── */
+    #confirm-dialog { z-index: 300; }
+    #confirm-dialog .modal { max-width: 380px; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+      .modal { padding: 28px 20px; }
+      header { padding: 14px 20px; }
+      .page { padding: 24px 16px 80px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <span class="header-logo">ZOMET<span>admin panel</span></span>
+  </div>
+  <div class="header-actions">
+    <a href="index.html" class="btn btn-ghost btn-sm">← Kembali ke Site</a>
+    <button class="btn btn-ghost btn-sm" onclick="clearToken()">Logout</button>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- TOKEN -->
+  <div class="card" id="token-section">
+    <div class="card-title">GITHUB TOKEN</div>
+    <div class="token-row">
+      <input type="password" id="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" />
+      <button class="btn btn-primary" onclick="saveToken()">Simpan & Muat</button>
+    </div>
+    <div class="input-hint">Buat token di GitHub → Settings → Developer Settings → Personal Access Tokens → Fine-grained. Butuh izin <strong>Contents: Read & Write</strong> untuk repo ini.</div>
+    <div class="token-status" id="token-status"></div>
+  </div>
+
+  <!-- PROJECT LIST -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <div class="card-title" style="margin-bottom:0;">DAFTAR PROJECT</div>
+      <button class="btn btn-primary btn-sm" onclick="openAddModal()" id="add-btn" disabled>
+        + Tambah Project
+      </button>
+    </div>
+    <div id="project-list">
+      <div class="proj-empty">Masukkan GitHub Token untuk memuat projects.</div>
+    </div>
+  </div>
+
+  <!-- SAVE -->
+  <div style="display:flex;align-items:center;justify-content:flex-end;gap:12px;">
+    <button class="btn btn-outline" onclick="loadFromGitHub()" id="reload-btn" disabled>↺ Muat Ulang</button>
+    <button class="btn btn-primary" onclick="saveToGitHub()" id="save-btn" disabled style="padding:12px 28px;font-size:.95rem;">
+      💾 Simpan ke GitHub
+    </button>
+  </div>
+
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="edit-modal-title">Tambah Project</div>
+      <button class="modal-close" onclick="closeEditModal()">×</button>
+    </div>
+
+    <input type="hidden" id="edit-index" value="-1" />
+
+    <div class="form-row">
+      <div>
+        <label>NAMA PROJECT *</label>
+        <input type="text" id="f-name" placeholder="Z Analytics" oninput="autoSlug()" />
+      </div>
+      <div>
+        <label>ICON (emoji atau URL gambar)</label>
+        <input type="text" id="f-icon" placeholder="🚀" oninput="previewIcon()" />
+        <div class="emoji-preview" id="icon-preview">🚀</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>DESKRIPSI (Indonesia) *</label>
+      <textarea id="f-desc" placeholder="Deskripsi singkat project dalam Bahasa Indonesia..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>DESCRIPTION (English)</label>
+      <textarea id="f-desc-en" placeholder="Short project description in English..."></textarea>
+    </div>
+
+    <div class="form-row">
+      <div>
+        <label>URL PROJECT</label>
+        <input type="url" id="f-url" placeholder="https://..." />
+      </div>
+      <div>
+        <label>STATUS</label>
+        <select id="f-status">
+          <option value="active">Active</option>
+          <option value="beta">Beta</option>
+          <option value="coming-soon">Coming Soon</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>TAGS (pisah dengan koma)</label>
+      <input type="text" id="f-tags" placeholder="AI, Web App, Mobile" />
+      <div class="input-hint">Contoh: AI, Windows, Productivity</div>
+    </div>
+
+    <div class="form-group">
+      <label>ID (auto-generate dari nama)</label>
+      <input type="text" id="f-id" placeholder="z-analytics" />
+    </div>
+
+    <div id="edit-error" style="color:var(--danger);font-size:.85rem;display:none;margin-top:8px;"></div>
+
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeEditModal()">Batal</button>
+      <button class="btn btn-primary" onclick="saveProject()">Simpan Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="modal-overlay" id="confirm-dialog">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="confirm-title">Hapus Project?</div>
+    </div>
+    <p id="confirm-msg" style="color:var(--muted);font-size:.9rem;"></p>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Batal</button>
+      <button class="btn btn-danger" id="confirm-ok-btn" onclick="confirmOk()">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<!-- STATUS BAR -->
+<div id="status-bar">
+  <span id="status-msg">Belum tersambung ke GitHub.</span>
+  <span id="status-count" style="color:var(--muted);font-size:.78rem;"></span>
+</div>
+
+<script>
+  const OWNER = 'djvpri';
+  const REPO  = 'zomet';
+  const FILE  = 'projects.json';
+  const API   = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${FILE}`;
+
+  let _token    = '';
+  let _sha      = null;
+  let _projects = [];
+  let _dirty    = false;
+  let _confirmCallback = null;
+
+  // ── INIT ──────────────────────────────────────────────
+  window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('zomet_admin_token');
+    if (saved) {
+      document.getElementById('token-input').value = saved;
+      _token = saved;
+      loadFromGitHub();
+    }
+  });
+
+  // ── TOKEN ─────────────────────────────────────────────
+  function saveToken() {
+    const val = document.getElementById('token-input').value.trim();
+    if (!val) return showTokenStatus('Token tidak boleh kosong.', false);
+    localStorage.setItem('zomet_admin_token', val);
+    _token = val;
+    loadFromGitHub();
+  }
+
+  function clearToken() {
+    localStorage.removeItem('zomet_admin_token');
+    _token = '';
+    _sha = null;
+    _projects = [];
+    document.getElementById('token-input').value = '';
+    document.getElementById('project-list').innerHTML = '<div class="proj-empty">Masukkan GitHub Token untuk memuat projects.</div>';
+    setControlsEnabled(false);
+    showStatus('Logout berhasil.', 'ok');
+    showTokenStatus('', null);
+  }
+
+  function showTokenStatus(msg, ok) {
+    const el = document.getElementById('token-status');
+    if (!msg) { el.style.display = 'none'; return; }
+    el.className = 'token-status ' + (ok ? 'ok' : 'error');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  // ── LOAD ──────────────────────────────────────────────
+  async function loadFromGitHub() {
+    if (!_token) return;
+    showStatus('Memuat projects dari GitHub...', 'saving');
+    try {
+      const res = await fetch(API, {
+        headers: { 'Authorization': `Bearer ${_token}`, 'Accept': 'application/vnd.github+json' }
+      });
+
+      if (res.status === 401) {
+        showTokenStatus('Token tidak valid atau sudah kedaluwarsa.', false);
+        showStatus('Autentikasi gagal.', 'error');
+        return;
+      }
+      if (res.status === 404) {
+        // File belum ada — mulai kosong
+        _sha = null;
+        _projects = [];
+        showTokenStatus('Token valid. File projects.json belum ada — akan dibuat saat disimpan.', true);
+      } else if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      } else {
+        const data = await res.json();
+        _sha = data.sha;
+        const raw = atob(data.content.replace(/\n/g, ''));
+        const decoded = decodeURIComponent(escape(raw));
+        _projects = JSON.parse(decoded);
+        showTokenStatus(`Token valid. Memuat ${_projects.length} project.`, true);
+      }
+
+      _dirty = false;
+      setControlsEnabled(true);
+      renderList();
+      showStatus(`${_projects.length} project dimuat.`, 'ok');
+    } catch (e) {
+      showTokenStatus('Gagal memuat: ' + e.message, false);
+      showStatus('Gagal memuat dari GitHub.', 'error');
+    }
+  }
+
+  // ── SAVE ──────────────────────────────────────────────
+  async function saveToGitHub() {
+    if (!_token) return;
+    showStatus('Menyimpan ke GitHub...', 'saving');
+    document.getElementById('save-btn').disabled = true;
+    try {
+      const json     = JSON.stringify(_projects, null, 2);
+      const encoded  = btoa(unescape(encodeURIComponent(json)));
+      const body     = {
+        message: `Update projects.json via admin panel (${_projects.length} projects)`,
+        content: encoded,
+        ..._sha ? { sha: _sha } : {}
+      };
+      const res = await fetch(API, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${_token}`,
+          'Accept':        'application/vnd.github+json',
+          'Content-Type':  'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP ${res.status}`);
+      }
+      const result = await res.json();
+      _sha   = result.content.sha;
+      _dirty = false;
+      const now = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      showStatus(`✓ Tersimpan pukul ${now}. GitHub Pages akan update dalam ~60 detik.`, 'ok');
+    } catch (e) {
+      showStatus('Gagal menyimpan: ' + e.message, 'error');
+    } finally {
+      document.getElementById('save-btn').disabled = false;
+    }
+  }
+
+  // ── RENDER LIST ───────────────────────────────────────
+  function renderList() {
+    const list = document.getElementById('project-list');
+    if (!_projects.length) {
+      list.innerHTML = '<div class="proj-empty">Belum ada project. Klik "+ Tambah Project" untuk mulai.</div>';
+      updateCount();
+      return;
+    }
+
+    const BADGE = {
+      'active':      'badge-active',
+      'beta':        'badge-beta',
+      'coming-soon': 'badge-coming'
+    };
+    const BADGE_LABEL = {
+      'active':      'Active',
+      'beta':        'Beta',
+      'coming-soon': 'Coming Soon'
+    };
+
+    list.innerHTML = _projects.map((p, i) => {
+      const iconHTML = p.icon && p.icon.startsWith('http')
+        ? `<img src="${p.icon}" alt="">`
+        : `<span>${p.icon || '🚀'}</span>`;
+      const badgeCls = BADGE[p.status] || 'badge-coming';
+      const badgeTxt = BADGE_LABEL[p.status] || p.status;
+      const tags = (p.tags || []).join(', ');
+      return `
+        <div class="proj-item" id="proj-${i}">
+          <div class="order-btns">
+            <button class="order-btn" onclick="moveUp(${i})" ${i === 0 ? 'disabled' : ''} title="Naik">▲</button>
+            <button class="order-btn" onclick="moveDown(${i})" ${i === _projects.length-1 ? 'disabled' : ''} title="Turun">▼</button>
+          </div>
+          <div class="proj-icon-sm">${iconHTML}</div>
+          <div class="proj-info">
+            <div class="proj-info-name">
+              ${p.name}
+              <span class="proj-badge ${badgeCls}">${badgeTxt}</span>
+            </div>
+            <div class="proj-info-meta">${tags}${p.url ? ' · ' + p.url : ''}</div>
+          </div>
+          <div class="proj-actions">
+            <button class="btn btn-outline btn-sm" onclick="openEditModal(${i})">Edit</button>
+            <button class="btn btn-danger btn-sm" onclick="askDelete(${i})">Hapus</button>
+          </div>
+        </div>`;
+    }).join('');
+    updateCount();
+  }
+
+  function updateCount() {
+    document.getElementById('status-count').textContent = `${_projects.length} project`;
+  }
+
+  // ── ORDER ─────────────────────────────────────────────
+  function moveUp(i) {
+    if (i <= 0) return;
+    [_projects[i-1], _projects[i]] = [_projects[i], _projects[i-1]];
+    markDirty(); renderList();
+  }
+  function moveDown(i) {
+    if (i >= _projects.length - 1) return;
+    [_projects[i], _projects[i+1]] = [_projects[i+1], _projects[i]];
+    markDirty(); renderList();
+  }
+
+  // ── ADD / EDIT MODAL ──────────────────────────────────
+  function openAddModal() {
+    document.getElementById('edit-modal-title').textContent = 'Tambah Project Baru';
+    document.getElementById('edit-index').value = '-1';
+    clearForm();
+    document.getElementById('edit-error').style.display = 'none';
+    document.getElementById('edit-modal').classList.add('open');
+    document.getElementById('f-name').focus();
+  }
+
+  function openEditModal(i) {
+    const p = _projects[i];
+    document.getElementById('edit-modal-title').textContent = 'Edit Project';
+    document.getElementById('edit-index').value = i;
+    document.getElementById('f-id').value       = p.id || '';
+    document.getElementById('f-name').value     = p.name || '';
+    document.getElementById('f-icon').value     = p.icon || '';
+    document.getElementById('f-desc').value     = p.description || '';
+    document.getElementById('f-desc-en').value  = p.description_en || '';
+    document.getElementById('f-url').value      = p.url || '';
+    document.getElementById('f-status').value   = p.status || 'active';
+    document.getElementById('f-tags').value     = (p.tags || []).join(', ');
+    document.getElementById('edit-error').style.display = 'none';
+    previewIcon();
+    document.getElementById('edit-modal').classList.add('open');
+  }
+
+  function closeEditModal() {
+    document.getElementById('edit-modal').classList.remove('open');
+  }
+
+  function clearForm() {
+    ['f-id','f-name','f-icon','f-desc','f-desc-en','f-url','f-tags'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('f-status').value = 'active';
+    document.getElementById('icon-preview').textContent = '🚀';
+  }
+
+  function autoSlug() {
+    const name = document.getElementById('f-name').value;
+    const slug = name.toLowerCase().trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-');
+    document.getElementById('f-id').value = slug;
+  }
+
+  function previewIcon() {
+    const val = document.getElementById('f-icon').value.trim();
+    const prev = document.getElementById('icon-preview');
+    if (!val) { prev.textContent = '🚀'; return; }
+    if (val.startsWith('http')) {
+      prev.innerHTML = `<img src="${val}" style="width:40px;height:40px;border-radius:8px;object-fit:cover;" onerror="this.style.display='none'">`;
+    } else {
+      prev.textContent = val;
+    }
+  }
+
+  function saveProject() {
+    const errEl = document.getElementById('edit-error');
+    const name  = document.getElementById('f-name').value.trim();
+    const desc  = document.getElementById('f-desc').value.trim();
+    if (!name) { showFormError('Nama project wajib diisi.'); return; }
+    if (!desc) { showFormError('Deskripsi (Indonesia) wajib diisi.'); return; }
+
+    const tags = document.getElementById('f-tags').value
+      .split(',').map(t => t.trim()).filter(Boolean);
+
+    const project = {
+      id:             document.getElementById('f-id').value.trim() || name.toLowerCase().replace(/\s+/g, '-'),
+      name,
+      description:    desc,
+      description_en: document.getElementById('f-desc-en').value.trim(),
+      url:            document.getElementById('f-url').value.trim(),
+      tags,
+      status:         document.getElementById('f-status').value,
+      icon:           document.getElementById('f-icon').value.trim() || '🚀'
+    };
+
+    const idx = parseInt(document.getElementById('edit-index').value);
+    if (idx === -1) {
+      _projects.push(project);
+    } else {
+      _projects[idx] = project;
+    }
+
+    closeEditModal();
+    markDirty();
+    renderList();
+    showStatus(`Project "${project.name}" ${idx === -1 ? 'ditambahkan' : 'diperbarui'}. Jangan lupa simpan ke GitHub!`, 'ok');
+  }
+
+  function showFormError(msg) {
+    const el = document.getElementById('edit-error');
+    el.textContent = msg;
+    el.style.display = 'block';
+  }
+
+  // ── DELETE ────────────────────────────────────────────
+  function askDelete(i) {
+    const p = _projects[i];
+    document.getElementById('confirm-title').textContent = 'Hapus Project?';
+    document.getElementById('confirm-msg').textContent   = `Yakin ingin menghapus "${p.name}"? Aksi ini tidak bisa dibatalkan.`;
+    document.getElementById('confirm-ok-btn').textContent = 'Hapus';
+    _confirmCallback = () => {
+      _projects.splice(i, 1);
+      markDirty();
+      renderList();
+      showStatus(`Project "${p.name}" dihapus. Jangan lupa simpan ke GitHub!`, 'ok');
+    };
+    document.getElementById('confirm-dialog').classList.add('open');
+  }
+
+  function closeConfirm() {
+    document.getElementById('confirm-dialog').classList.remove('open');
+    _confirmCallback = null;
+  }
+
+  function confirmOk() {
+    closeConfirm();
+    if (_confirmCallback) _confirmCallback();
+  }
+
+  // ── HELPERS ───────────────────────────────────────────
+  function markDirty() {
+    _dirty = true;
+  }
+
+  function setControlsEnabled(on) {
+    document.getElementById('add-btn').disabled    = !on;
+    document.getElementById('save-btn').disabled   = !on;
+    document.getElementById('reload-btn').disabled = !on;
+  }
+
+  function showStatus(msg, type) {
+    const el = document.getElementById('status-msg');
+    el.textContent = msg;
+    el.className   = type || '';
+  }
+
+  // Close modals on overlay click
+  document.getElementById('edit-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditModal();
+  });
+  document.getElementById('confirm-dialog').addEventListener('click', function(e) {
+    if (e.target === this) closeConfirm();
+  });
+</script>
+
+</body>
+</html>

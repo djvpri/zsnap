@@ -465,6 +465,58 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    /* ── PROJECTS ── */
+    #projects { background: #0d0d0d; }
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .project-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: border-color .2s, transform .2s;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .project-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+    .project-card-header { display: flex; align-items: center; gap: 14px; }
+    .project-icon {
+      width: 52px; height: 52px;
+      border-radius: 12px;
+      background: rgba(0,220,180,.08);
+      border: 1px solid rgba(0,220,180,.18);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+    .project-icon img { width: 30px; height: 30px; border-radius: 6px; object-fit: cover; }
+    .project-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+    .project-status {
+      display: inline-block;
+      font-size: .68rem; font-weight: 700; letter-spacing: 1px;
+      padding: 3px 10px; border-radius: 999px;
+    }
+    .status-active    { background: rgba(0,220,180,.12); color: var(--accent); }
+    .status-beta      { background: rgba(255,200,0,.12);  color: #ffc800; }
+    .status-coming    { background: rgba(255,255,255,.06); color: var(--muted); }
+    .project-tags     { display: flex; gap: 6px; flex-wrap: wrap; }
+    .project-tag {
+      font-size: .72rem; padding: 3px 10px; border-radius: 999px;
+      background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--muted);
+    }
+    .project-desc { color: var(--muted); font-size: .9rem; flex: 1; }
+    .project-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: .85rem; font-weight: 600; color: var(--accent);
+      margin-top: 4px; transition: opacity .2s; width: fit-content;
+    }
+    .project-link:hover { opacity: .75; }
+    .projects-loading { text-align: center; color: var(--muted); padding: 60px 0; }
   </style>
 </head>
 <body>
@@ -477,16 +529,7 @@
     <a href="#cara-pakai" data-i18n="nav_how">Cara Pakai</a>
     <a href="#harga"     data-i18n="nav_pricing">Harga</a>
     <a href="#download"  data-i18n="nav_download">Download</a>
-    <a href="https://z-medics.vercel.app/" target="_blank" rel="noopener"
-       style="color:var(--accent);font-weight:600;display:flex;align-items:center;gap:5px;">
-      Z Medics
-      <svg style="width:11px;height:11px;fill:var(--accent);opacity:.7;" viewBox="0 0 24 24"><path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z"/></svg>
-    </a>
-    <a href="https://web-production-ae46e.up.railway.app/" target="_blank" rel="noopener"
-       style="color:var(--accent);font-weight:600;display:flex;align-items:center;gap:5px;">
-      Z Trader
-      <svg style="width:11px;height:11px;fill:var(--accent);opacity:.7;" viewBox="0 0 24 24"><path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z"/></svg>
-    </a>
+    <a href="#projects" data-i18n="nav_projects">Projects</a>
     <div class="lang-toggle">
       <button class="lang-btn" id="btn-id" onclick="setLang('id')">ID</button>
       <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
@@ -583,6 +626,18 @@
         <h3 data-i18n="s3_h">Dapat Jawaban</h3>
         <p  data-i18n="s3_p">AI langsung menganalisa dan menampilkan jawaban beserta penjelasan singkat.</p>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="container">
+    <div class="section-label" data-i18n="proj_label">PROJECTS SAYA</div>
+    <h2 class="section-title" data-i18n="proj_title">Project Lainnya</h2>
+    <p class="section-sub" data-i18n="proj_sub">Tools dan aplikasi lain yang saya kembangkan.</p>
+    <div class="projects-grid" id="projects-grid">
+      <div class="projects-loading">Loading...</div>
     </div>
   </div>
 </section>
@@ -733,6 +788,7 @@
     id: {
       nav_features: "Fitur",
       nav_how:      "Cara Pakai",
+      nav_projects: "Projects",
       nav_pricing:  "Harga",
       nav_download: "Download",
       nav_cta:      "Download Gratis",
@@ -804,6 +860,10 @@
       footer_refund:   "Kebijakan Pengembalian Dana",
       footer_contact:  "Kontak",
       wa_tooltip:  "Chat via WhatsApp",
+      proj_label:  "PROJECTS SAYA",
+      proj_title:  "Project Lainnya",
+      proj_sub:    "Tools dan aplikasi lain yang saya kembangkan.",
+      proj_visit:  "Buka Project",
       modal_title: "Coba Gratis",
       modal_sub:   "Masukkan nomor HP Anda untuk mendapatkan license demo (5x pakai).",
       modal_btn:   "Dapatkan License Demo",
@@ -823,6 +883,7 @@
     en: {
       nav_features: "Features",
       nav_how:      "How It Works",
+      nav_projects: "Projects",
       nav_pricing:  "Pricing",
       nav_download: "Download",
       nav_cta:      "Free Download",
@@ -894,6 +955,10 @@
       footer_refund:   "Refund Policy",
       footer_contact:  "Contact",
       wa_tooltip:  "Chat via WhatsApp",
+      proj_label:  "MY PROJECTS",
+      proj_title:  "Other Projects",
+      proj_sub:    "Other tools and apps I've built.",
+      proj_visit:  "Visit Project",
       modal_title: "Try For Free",
       modal_sub:   "Enter your phone number to get a demo license (5 uses).",
       modal_btn:   "Get Demo License",
@@ -921,6 +986,7 @@
     document.getElementById('btn-id').classList.toggle('active', lang === 'id');
     document.getElementById('btn-en').classList.toggle('active', lang === 'en');
     localStorage.setItem('zomet_lang', lang);
+    if (window._projectsCache) renderProjects(window._projectsCache, lang);
   }
 
   const saved = localStorage.getItem('zomet_lang') || 'en';
@@ -1174,6 +1240,65 @@
     document.execCommand('copy'); document.body.removeChild(el);
     showCopied(btn);
   }
+
+  // ── PROJECTS ──────────────────────────────────────────
+  window._projectsCache = null;
+
+  const STATUS_LABEL = { active: 'Active', beta: 'Beta', 'coming-soon': 'Coming Soon' };
+  const STATUS_CLASS  = { active: 'status-active', beta: 'status-beta', 'coming-soon': 'status-coming' };
+
+  function renderProjects(projects, lang) {
+    const grid = document.getElementById('projects-grid');
+    if (!grid) return;
+    const t = translations[lang] || translations.id;
+    if (!projects.length) {
+      grid.innerHTML = '<div class="projects-loading">No projects yet.</div>';
+      return;
+    }
+    grid.innerHTML = projects.map(p => {
+      const iconHTML = p.icon && p.icon.startsWith('http')
+        ? `<img src="${p.icon}" alt="${p.name}">`
+        : `<span>${p.icon || '🚀'}</span>`;
+      const desc = (lang === 'en' && p.description_en) ? p.description_en : p.description;
+      const statusClass = STATUS_CLASS[p.status] || 'status-coming';
+      const statusText  = STATUS_LABEL[p.status] || p.status;
+      const tags = (p.tags || []).map(tag => `<span class="project-tag">${tag}</span>`).join('');
+      const link = p.url
+        ? `<a href="${p.url}" class="project-link" target="_blank" rel="noopener">
+             ${t.proj_visit || 'Visit'}
+             <svg style="width:11px;height:11px;fill:var(--accent);" viewBox="0 0 24 24"><path d="M14 3h7v7h-2V6.41l-9.29 9.3-1.42-1.42L17.59 5H14V3zM5 5h6v2H7v10h10v-4h2v6H5V5z"/></svg>
+           </a>` : '';
+      return `
+        <div class="project-card">
+          <div class="project-card-header">
+            <div class="project-icon">${iconHTML}</div>
+            <div>
+              <div class="project-name">${p.name}</div>
+              <span class="project-status ${statusClass}">${statusText}</span>
+            </div>
+          </div>
+          <div class="project-tags">${tags}</div>
+          <p class="project-desc">${desc}</p>
+          ${link}
+        </div>`;
+    }).join('');
+  }
+
+  async function loadProjects() {
+    const lang = localStorage.getItem('zomet_lang') || 'id';
+    try {
+      const res = await fetch('projects.json?v=' + Date.now());
+      if (!res.ok) throw new Error('not found');
+      const data = await res.json();
+      window._projectsCache = data;
+      renderProjects(data, lang);
+    } catch (_) {
+      const grid = document.getElementById('projects-grid');
+      if (grid) grid.innerHTML = '<div class="projects-loading">Projects coming soon...</div>';
+    }
+  }
+
+  loadProjects();
 </script>
 
 </body>
