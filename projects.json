@@ -5,7 +5,11 @@
     "description": "AI Screenshot Solver berbasis Gemini 2.5 Flash. Menjawab soal dari screenshot secara instan, tersembunyi di layar.",
     "description_en": "AI Screenshot Solver powered by Gemini 2.5 Flash. Answers questions from screenshots instantly, hidden on screen.",
     "url": "https://djvpri.github.io/zomet",
-    "tags": ["AI", "Windows", "Productivity"],
+    "tags": [
+      "AI",
+      "Windows",
+      "Productivity"
+    ],
     "status": "active",
     "icon": "🤖"
   },
@@ -15,7 +19,10 @@
     "description": "Platform kesehatan digital untuk manajemen rekam medis dan konsultasi online.",
     "description_en": "Digital health platform for medical records management and online consultation.",
     "url": "https://z-medics.vercel.app/",
-    "tags": ["Health", "Web App"],
+    "tags": [
+      "Health",
+      "Web App"
+    ],
     "status": "active",
     "icon": "🏥"
   },
@@ -25,8 +32,32 @@
     "description": "Platform trading otomatis dengan analisis teknikal dan sinyal pasar real-time.",
     "description_en": "Automated trading platform with technical analysis and real-time market signals.",
     "url": "https://web-production-ae46e.up.railway.app/",
-    "tags": ["Trading", "Finance", "AI"],
+    "tags": [
+      "Trading",
+      "Finance",
+      "AI"
+    ],
     "status": "active",
     "icon": "📈"
+  },
+  {
+    "id": "zpos",
+    "name": "ZPos",
+    "description": "Aplikasi kasir digital yang simpel, mobile-friendly, dan terjangkau. Cocok untuk warung, kafe, toko kelontong, dan UMKM lainnya.",
+    "description_en": "",
+    "url": "https://zpos-production.up.railway.app/",
+    "tags": [],
+    "status": "active",
+    "icon": "🚀"
+  },
+  {
+    "id": "zface",
+    "name": "ZFace",
+    "description": "ZFace adalah sistem identifikasi wajah berbasis AI yang akurat dan real-time — cocok untuk kontrol akses, dan manajemen pengunjung bisnis Anda.",
+    "description_en": "",
+    "url": "https://zface.zomet.my.id/",
+    "tags": [],
+    "status": "active",
+    "icon": "🚀"
   }
 ]
