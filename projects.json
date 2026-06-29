@@ -1,7 +1,7 @@
 [
   {
     "id": "zomet",
-    "name": "ZOMET AI",
+    "name": "ZSnap",
     "description": "AI Screenshot Solver berbasis Gemini 2.5 Flash. Menjawab soal dari screenshot secara instan, tersembunyi di layar.",
     "description_en": "AI Screenshot Solver powered by Gemini 2.5 Flash. Answers questions from screenshots instantly, hidden on screen.",
     "url": "https://djvpri.github.io/zomet",
