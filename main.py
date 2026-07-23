@@ -4,10 +4,15 @@ import string
 import smtplib
 import threading
 import hashlib
+import hmac
+import base64
+import json
+import time
 import httpx
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from fastapi import FastAPI, HTTPException, Header, Depends, Request
+from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from datetime import datetime
@@ -37,6 +42,12 @@ API_SECRET     = os.getenv("API_SECRET", "rahasia-dari-desktop-ke-server")
 PROCESS_SECRET = os.getenv("PROCESS_SECRET", "zomet-secret-2026")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
+# SSO Zomet (Z One). CROSS_APP_SECRET harus sama dengan Z One.
+CROSS_APP_SECRET  = os.getenv("CROSS_APP_SECRET", "")
+ZONE_URL          = os.getenv("NEXT_PUBLIC_ZONE_URL", "https://zone.zomet.my.id").rstrip("/")
+# Secret untuk menandatangani token sesi ZSnap (ke desktop). Default: PROCESS_SECRET.
+ZSNAP_JWT_SECRET  = os.getenv("ZSNAP_JWT_SECRET", PROCESS_SECRET)
+
 SMTP_USER  = os.getenv("SMTP_USER")   # Gmail address, e.g. you@gmail.com
 SMTP_PASS  = os.getenv("SMTP_PASS")   # Gmail App Password (16 chars)
 NOTIFY_TO  = os.getenv("NOTIFY_TO", SMTP_USER)  # recipient, defaults to sender
@@ -56,6 +67,53 @@ PRICES = {
     "monthly": 210000,
     "yearly":  650000,
 }
+
+# =========================================================
+# JWT (HS256, stdlib) — SSO Z One & token sesi desktop
+# =========================================================
+
+def _b64url(raw: bytes) -> str:
+    return base64.urlsafe_b64encode(raw).rstrip(b"=").decode()
+
+def _b64url_decode(seg: str) -> bytes:
+    return base64.urlsafe_b64decode(seg + "=" * (-len(seg) % 4))
+
+def _jwt_encode(payload: dict, secret: str) -> str:
+    header = {"alg": "HS256", "typ": "JWT"}
+    body = _b64url(json.dumps(header, separators=(",", ":")).encode()) + "." + \
+           _b64url(json.dumps(payload, separators=(",", ":")).encode())
+    sig = hmac.new(secret.encode(), body.encode(), hashlib.sha256).digest()
+    return body + "." + _b64url(sig)
+
+def _jwt_decode(token: str, secret: str) -> dict | None:
+    try:
+        h, p, s = token.split(".")
+        expected = _b64url(hmac.new(secret.encode(), f"{h}.{p}".encode(), hashlib.sha256).digest())
+        if not hmac.compare_digest(expected, s):
+            return None
+        payload = json.loads(_b64url_decode(p))
+        if int(payload.get("exp", 0)) < int(time.time()):
+            return None
+        return payload
+    except Exception:
+        return None
+
+def make_zsnap_token(email: str, name: str, days: int = 30) -> str:
+    return _jwt_encode(
+        {"email": email, "name": name, "app": "zsnap", "exp": int(time.time()) + days * 86400},
+        ZSNAP_JWT_SECRET,
+    )
+
+def verify_zsnap_token(token: str) -> dict | None:
+    p = _jwt_decode(token or "", ZSNAP_JWT_SECRET)
+    return p if p and p.get("app") == "zsnap" else None
+
+def verify_zone_token(token: str) -> dict | None:
+    """Verifikasi JWT dari Z One (/api/sso/zsnap), klaim app='zsnap'."""
+    if not CROSS_APP_SECRET:
+        return None
+    p = _jwt_decode(token or "", CROSS_APP_SECRET)
+    return p if p and p.get("app") == "zsnap" else None
 
 # =========================================================
 # APP
@@ -216,6 +274,57 @@ async def root():
     return {"status": "online", "app": "Zomet API"}
 
 # =========================================================
+# SSO Z One untuk aplikasi DESKTOP (browser + loopback)
+# =========================================================
+# Alur:
+#  1. Desktop menjalankan server lokal di 127.0.0.1:<port>, lalu membuka
+#     browser ke /desktop-login?port=<port>.
+#  2. /desktop-login menyimpan cookie loopback, redirect ke Z One SSO.
+#  3. Z One (setelah user login) redirect balik ke /sso?token=<JWT Zone>.
+#  4. /sso verifikasi token Zone, terbitkan token sesi ZSnap, lalu redirect
+#     ke http://127.0.0.1:<port>/callback?token=<token ZSnap>.
+#  5. Desktop menyimpan token ZSnap & memakainya (Bearer) di /process-image.
+
+@app.get("/desktop-login")
+def desktop_login(port: int):
+    if not (1024 <= port <= 65535):
+        raise HTTPException(status_code=400, detail="Port tidak valid")
+    resp = RedirectResponse(f"{ZONE_URL}/api/sso/zsnap")
+    resp.set_cookie(
+        "zsnap_cb", f"http://127.0.0.1:{port}/callback",
+        max_age=600, httponly=True, samesite="lax", secure=True,
+    )
+    return resp
+
+@app.get("/sso")
+def sso_callback(request: Request, token: str = ""):
+    payload = verify_zone_token(token)
+    if not payload:
+        return HTMLResponse("<h3 style='font-family:sans-serif'>Token SSO tidak valid atau kedaluwarsa.</h3>", status_code=401)
+
+    email = str(payload.get("email", "")).strip().lower()
+    name = str(payload.get("name") or email)
+    if not email:
+        return HTMLResponse("<h3 style='font-family:sans-serif'>Email tidak ada di token.</h3>", status_code=400)
+
+    ztoken = make_zsnap_token(email, name)
+    cb = request.cookies.get("zsnap_cb", "")
+
+    if cb.startswith("http://127.0.0.1:"):
+        resp = RedirectResponse(f"{cb}?token={ztoken}")
+        resp.delete_cookie("zsnap_cb")
+        return resp
+
+    # Fallback: tampilkan token untuk disalin manual ke aplikasi.
+    return HTMLResponse(f"""
+    <html><body style="font-family:sans-serif;text-align:center;padding:40px;background:#0f172a;color:#e2e8f0">
+      <h2 style="color:#00dcb4">Login berhasil</h2>
+      <p>Halo {name}. Salin kode berikut ke aplikasi ZSnap:</p>
+      <textarea readonly style="width:90%;max-width:520px;height:90px;padding:10px;border-radius:8px" onclick="this.select()">{ztoken}</textarea>
+    </body></html>
+    """)
+
+# =========================================================
 # CLAIM DEMO (PUBLIC)
 # =========================================================
 
@@ -275,21 +384,30 @@ async def process_image(request: Request, db=Depends(get_db)):
         if not image_base64:
             raise HTTPException(status_code=400, detail="Image not found")
 
-        if not license_key:
-            raise HTTPException(status_code=401, detail="License key required")
+        # ---- Auth: token SSO Z One (Bearer) ATAU license key (fallback lama) ----
+        auth = request.headers.get("authorization", "")
+        bearer = auth[7:].strip() if auth.lower().startswith("bearer ") else None
+        zone_user = verify_zsnap_token(bearer) if bearer else None
 
-        # Validasi license
-        lic = db.query(License).filter(License.license_key == license_key).first()
-        if not lic:
-            raise HTTPException(status_code=403, detail="License not found")
-        if not lic.active:
-            raise HTTPException(status_code=403, detail="License inactive")
-        if lic.expires_at and datetime.now().date() > lic.expires_at:
-            raise HTTPException(status_code=403, detail="License expired")
-        if lic.hwid and hwid and lic.hwid != hwid:
-            raise HTTPException(status_code=403, detail="Device not authorized")
-        if lic.usage_count >= lic.usage_limit:
-            raise HTTPException(status_code=403, detail="Usage limit reached")
+        if zone_user:
+            # Semua user Z One boleh pakai (tanpa batas paket).
+            license_key = None
+            lic = None
+        else:
+            if not license_key:
+                raise HTTPException(status_code=401, detail="Login Z One diperlukan")
+            # Validasi license (jalur lama)
+            lic = db.query(License).filter(License.license_key == license_key).first()
+            if not lic:
+                raise HTTPException(status_code=403, detail="License not found")
+            if not lic.active:
+                raise HTTPException(status_code=403, detail="License inactive")
+            if lic.expires_at and datetime.now().date() > lic.expires_at:
+                raise HTTPException(status_code=403, detail="License expired")
+            if lic.hwid and hwid and lic.hwid != hwid:
+                raise HTTPException(status_code=403, detail="Device not authorized")
+            if lic.usage_count >= lic.usage_limit:
+                raise HTTPException(status_code=403, detail="Usage limit reached")
 
         url = (
             "https://generativelanguage.googleapis.com/"
@@ -331,18 +449,28 @@ async def process_image(request: Request, db=Depends(get_db)):
         print("STATUS:", response.status_code)
         print("BODY:", response.text)
 
-        # Increment usage setelah Gemini berhasil
-        if license_key and response.status_code == 200:
-            lic = db.query(License).filter(License.license_key == license_key).first()
-            if lic:
-                lic.usage_count += 1
+        # Catat pemakaian setelah Gemini berhasil
+        if response.status_code == 200:
+            if zone_user:
+                em = str(zone_user.get("email", "")).lower()
                 db.add(UsageLog(
-                    license_key=license_key,
-                    plan=lic.plan,
+                    license_key=f"zone:{em}",
+                    plan="zone",
                     event="process_image",
-                    notes=hwid
+                    notes=em
                 ))
                 db.commit()
+            elif license_key:
+                lic = db.query(License).filter(License.license_key == license_key).first()
+                if lic:
+                    lic.usage_count += 1
+                    db.add(UsageLog(
+                        license_key=license_key,
+                        plan=lic.plan,
+                        event="process_image",
+                        notes=hwid
+                    ))
+                    db.commit()
 
         return response.json()
 

@@ -37,14 +37,91 @@ from PyQt6.QtCore import (
 from PIL import Image
 import mss
 
+import json
+import threading
+import webbrowser
+import urllib.parse
+import http.server
+import socketserver
+
 
 # =========================================================
 # CONFIG
 # =========================================================
 
 BASE_URL = "https://zomet-production.up.railway.app/process-image"
+BACKEND  = BASE_URL.rsplit("/", 1)[0]  # tanpa /process-image
+TOKEN_FILE = os.path.join(os.path.expanduser("~"), ".zsnap_token")
 
 APP_TITLE = "ZOMET AI"
+
+
+# =========================================================
+# SSO Z One (login desktop lewat browser + loopback)
+# =========================================================
+
+def load_token():
+    try:
+        with open(TOKEN_FILE, "r", encoding="utf-8") as f:
+            return f.read().strip()
+    except Exception:
+        return ""
+
+def save_token(t):
+    try:
+        with open(TOKEN_FILE, "w", encoding="utf-8") as f:
+            f.write(t or "")
+    except Exception:
+        pass
+
+def token_email(token):
+    """Ambil email dari token (dan cek belum kedaluwarsa). None kalau tidak valid."""
+    try:
+        seg = token.split(".")[1]
+        seg += "=" * (-len(seg) % 4)
+        payload = json.loads(base64.urlsafe_b64decode(seg))
+        if int(payload.get("exp", 0)) < time.time():
+            return None
+        return payload.get("email")
+    except Exception:
+        return None
+
+def sso_login(timeout=180):
+    """Buka browser untuk login Z One, tangkap token via loopback. Return token/None."""
+    result = {"token": None}
+    done = threading.Event()
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self):
+            parsed = urllib.parse.urlparse(self.path)
+            if parsed.path == "/callback":
+                q = urllib.parse.parse_qs(parsed.query)
+                result["token"] = (q.get("token") or [None])[0]
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(
+                    b"<html><body style='font-family:sans-serif;text-align:center;padding:48px;"
+                    b"background:#0f172a;color:#e2e8f0'><h2 style='color:#00dcb4'>Login berhasil</h2>"
+                    b"<p>Silakan kembali ke aplikasi ZSnap.</p></body></html>"
+                )
+                done.set()
+            else:
+                self.send_response(404)
+                self.end_headers()
+
+        def log_message(self, *args):
+            pass
+
+    httpd = socketserver.TCPServer(("127.0.0.1", 0), Handler)
+    port = httpd.server_address[1]
+    threading.Thread(target=httpd.serve_forever, daemon=True).start()
+    try:
+        webbrowser.open(f"{BACKEND}/desktop-login?port={port}")
+        done.wait(timeout)
+    finally:
+        httpd.shutdown()
+    return result["token"]
 
 WINDOW_OPACITY = 0.35
 
@@ -171,12 +248,11 @@ class GeminiWorker(QThread):
 
     finished_signal = pyqtSignal(str)
 
-    def __init__(self, image_path, license_key, hwid):
+    def __init__(self, image_path, token):
         super().__init__()
 
-        self.image_path  = image_path
-        self.license_key = license_key
-        self.hwid        = hwid
+        self.image_path = image_path
+        self.token      = token
 
     def run(self):
 
@@ -196,15 +272,12 @@ class GeminiWorker(QThread):
             # SEND TO SERVER
             # =============================================
 
-            payload = {
-                "image":       image_base64,
-                "license_key": self.license_key,
-                "hwid":        self.hwid
-            }
+            payload = {"image": image_base64}
 
             response = requests.post(
                 BASE_URL,
                 json=payload,
+                headers={"Authorization": f"Bearer {self.token}"},
                 timeout=90
             )
 
@@ -246,7 +319,11 @@ class GeminiWorker(QThread):
                     else:
                         msg = "Access denied. Please contact admin."
                 elif response.status_code == 401:
-                    msg = "Authentication failed. Please contact admin."
+                    msg = (
+                        "Sesi login berakhir.\n\n"
+                        "Tutup lalu buka ulang aplikasi\n"
+                        "untuk login kembali lewat Z One."
+                    )
                 elif response.status_code >= 500:
                     msg = (
                         "Server is experiencing issues.\n\n"
@@ -889,11 +966,7 @@ class StealthWindow(QWidget):
 
             self.label.setText("Analyzing...")
 
-            self.worker = GeminiWorker(
-                temp_path,
-                ACTIVE_LICENSE_KEY,
-                ACTIVE_HWID
-            )
+            self.worker = GeminiWorker(temp_path, ACTIVE_TOKEN)
 
             self.worker.finished_signal.connect(
                 self.handle_result
@@ -931,8 +1004,7 @@ class StealthWindow(QWidget):
 # MAIN
 # =========================================================
 
-ACTIVE_LICENSE_KEY = ""
-ACTIVE_HWID        = ""
+ACTIVE_TOKEN = ""
 
 if __name__ == "__main__":
 
@@ -941,69 +1013,27 @@ if __name__ == "__main__":
     app.setQuitOnLastWindowClosed(False)
 
     # =========================================
-    # LICENSE CHECK
+    # LOGIN — SSO Z One
     # =========================================
 
-    license_key, ok = QInputDialog.getText(
-        None,
-        "Zomet License",
-        "Enter your License Key:"
-    )
+    ACTIVE_TOKEN = load_token()
 
-    if not ok or not license_key:
-        sys.exit()
-
-    try:
-        hwid = str(uuid.getnode())
-
-        response = requests.post(
-            "https://zomet-production.up.railway.app/verify-license",
-            json={
-                "license_key": license_key,
-                "hwid": hwid
-            },
-            timeout=15
+    if not token_email(ACTIVE_TOKEN):
+        QMessageBox.information(
+            None, "ZSnap",
+            "Login diperlukan.\n\nBrowser akan terbuka untuk masuk lewat Z One."
         )
+        ACTIVE_TOKEN = sso_login() or ""
 
-        print(response.text)
-
-        result = response.json()
-
-        print(result)
-
-        if not result.get("valid"):
-
-            msg = QMessageBox()
-
-            msg.setWindowTitle("Zomet License")
-
-            msg.setText("License key not valid!")
-
-            msg.setIcon(QMessageBox.Icon.Critical)
-
-            msg.exec()
-
+        if not token_email(ACTIVE_TOKEN):
+            m = QMessageBox()
+            m.setWindowTitle("ZSnap")
+            m.setText("Login dibatalkan atau gagal.")
+            m.setIcon(QMessageBox.Icon.Critical)
+            m.exec()
             sys.exit()
 
-        ACTIVE_LICENSE_KEY = license_key
-        ACTIVE_HWID        = hwid
-
-    except Exception as e:
-
-        msg = QMessageBox()
-
-        msg.setWindowTitle("Zomet Error")
-
-        msg.setText(
-            "Unable to connect to license server.\n\n"
-            + str(e)
-        )
-
-        msg.setIcon(QMessageBox.Icon.Warning)
-
-        msg.exec()
-
-        sys.exit()
+        save_token(ACTIVE_TOKEN)
 
     # =========================================
     # APP START
@@ -1018,22 +1048,5 @@ if __name__ == "__main__":
     window.raise_()
 
     window.activateWindow()
-
-    # =========================================
-    # HEARTBEAT
-    # =========================================
-
-    def on_kicked(message):
-        window.hide()
-        msg = QMessageBox()
-        msg.setWindowTitle("Zomet — Session Ended")
-        msg.setText(message)
-        msg.setIcon(QMessageBox.Icon.Warning)
-        msg.exec()
-        QApplication.quit()
-
-    heartbeat = HeartbeatWorker(ACTIVE_LICENSE_KEY, ACTIVE_HWID)
-    heartbeat.kicked_signal.connect(on_kicked)
-    heartbeat.start()
 
     sys.exit(app.exec())
