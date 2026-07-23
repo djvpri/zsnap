@@ -451,28 +451,31 @@ async def process_image(request: Request, db=Depends(get_db)):
         print("STATUS:", response.status_code)
         print("BODY:", response.text)
 
-        # Catat pemakaian setelah Gemini berhasil
+        # Catat pemakaian setelah Gemini berhasil (DB mungkin down, jangan crash)
         if response.status_code == 200:
-            if zone_user:
-                em = str(zone_user.get("email", "")).lower()
-                db.add(UsageLog(
-                    license_key=f"zone:{em}",
-                    plan="zone",
-                    event="process_image",
-                    notes=em
-                ))
-                db.commit()
-            elif license_key:
-                lic = db.query(License).filter(License.license_key == license_key).first()
-                if lic:
-                    lic.usage_count += 1
+            try:
+                if zone_user:
+                    em = str(zone_user.get("email", "")).lower()
                     db.add(UsageLog(
-                        license_key=license_key,
-                        plan=lic.plan,
+                        license_key=f"zone:{em}",
+                        plan="zone",
                         event="process_image",
-                        notes=hwid
+                        notes=em
                     ))
                     db.commit()
+                elif license_key:
+                    lic = db.query(License).filter(License.license_key == license_key).first()
+                    if lic:
+                        lic.usage_count += 1
+                        db.add(UsageLog(
+                            license_key=license_key,
+                            plan=lic.plan,
+                            event="process_image",
+                            notes=hwid
+                        ))
+                        db.commit()
+            except Exception as _log_err:
+                print(f"[WARN] Usage log failed (non-fatal): {_log_err}")
 
         return response.json()
 
