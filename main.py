@@ -20,19 +20,21 @@ from db import SessionLocal, engine
 from model import Base, License, UsageLog, Transaction
 from license_service import calculate_expiry
 
-Base.metadata.create_all(bind=engine)
-
-# Tambah kolom baru jika belum ada (untuk upgrade database lama)
-with engine.connect() as conn:
-    for ddl in [
-        "ALTER TABLE licenses ADD COLUMN IF NOT EXISTS notes VARCHAR",
-        "ALTER TABLE licenses ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()",
-    ]:
-        try:
-            conn.execute(__import__("sqlalchemy").text(ddl))
-            conn.commit()
-        except Exception:
-            pass
+try:
+    Base.metadata.create_all(bind=engine)
+    # Tambah kolom baru jika belum ada (untuk upgrade database lama)
+    with engine.connect() as conn:
+        for ddl in [
+            "ALTER TABLE licenses ADD COLUMN IF NOT EXISTS notes VARCHAR",
+            "ALTER TABLE licenses ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()",
+        ]:
+            try:
+                conn.execute(__import__("sqlalchemy").text(ddl))
+                conn.commit()
+            except Exception:
+                pass
+except Exception as _db_err:
+    print(f"[WARN] DB init failed, starting without DB: {_db_err}")
 
 # =========================================================
 # CONFIG
